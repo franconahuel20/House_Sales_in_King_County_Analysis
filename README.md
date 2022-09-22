@@ -1,2 +1,2 @@
-# House_Sales_in_King_County_Analysis
+# House Sales in King County Analysis
 Repository for home price analysis and forecasting in King County, USA
