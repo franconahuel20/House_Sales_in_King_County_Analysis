@@ -163,22 +163,32 @@ observar una cantidad considerable de valores fuera de los límites a los cuále
 futuro aún más exhaustivo podremos considerarlos o no como outliers. Los precios que podrían ser 
 potencialmente outliers entonces están entre los menores a 75000 y los mayores a 1129575.
 
-El boxplot de Bedrooms nos muestra que el 50% de las casas tienen de 3 a 4 habitaciones aunque la mayor cantidad de casas tienen entre 1.5 y 5.5. También se pueden observar una cantidad pequeña de valores fuera de los límites los cuáles podrían ser potencialmente outliers. Cabe destacar que hay una casa que cuenta con 33 habitaciones. Este dato está muy alejado de los demás por lo que nos resulta sospechoso.
+El boxplot de Bedrooms nos muestra que el 50% de las casas tienen de 3 a 4 habitaciones aunque la 
+mayor cantidad de casas tienen entre 1.5 y 5.5. También se pueden observar una cantidad pequeña de 
+valores fuera de los límites los cuáles podrían ser potencialmente outliers. Cabe destacar que hay 
+una casa que cuenta con 33 habitaciones. Este dato está muy alejado de los demás por lo que nos 
+resulta sospechoso.
 ```{r}
 par(mfrow=c(1,2))
 boxplot(raw_data_house$price/1000,main="Price [1 = U$D 1000]")
 boxplot(raw_data_house$bedrooms,main="bedrooms")
 ```
 ### Bathrooms
-El boxplot de Bathrooms nos dice que el 50% de las casas tienen una cantidad de baños que van de 1.75 a 2.5 aunque la mayor cantidad de los datos se encuentran entre 0.6 y 3.5. También se pueden observar una cantidad pequeña de valores fuera de los límites los cuáles podrían ser potencialmente outliers.
+El boxplot de Bathrooms nos dice que el 50% de las casas tienen una cantidad de baños que van de 1.75 
+a 2.5 aunque la mayor cantidad de los datos se encuentran entre 0.6 y 3.5. También se pueden observar 
+una cantidad pequeña de valores fuera de los límites los cuáles podrían ser potencialmente outliers.
 
 ```{r}
 par(mfrow=c(1,2))
 boxplot(raw_data_house$bathrooms,main="bathrooms")
 ```
 ### Sqft_lot y Sqft_lot15
-El boxplot de Sqft_lot nos dice que el 50% de los datos van de 5040 a 10688 aunque la mayor cantidad de los datos se encuentran entre 520 y 19160. También se pueden observar una cantidad considerable de valores fuera de los límites los cuáles podrían ser potencialmente outliers.
-El boxplot de Sqft_lot15 nos dice que el 50% de los datos van de 5100 a 10083 aunque la mayor cantidad de los datos se encuentran entre 651 y 17557. También se pueden observar una cantidad considerable de valores fuera de los límites los cuáles podrían ser potencialmente outliers.
+El boxplot de Sqft_lot nos dice que el 50% de los datos van de 5040 a 10688 aunque la mayor cantidad de 
+los datos se encuentran entre 520 y 19160. También se pueden observar una cantidad considerable de 
+valores fuera de los límites los cuáles podrían ser potencialmente outliers.
+El boxplot de Sqft_lot15 nos dice que el 50% de los datos van de 5100 a 10083 aunque la mayor cantidad 
+de los datos se encuentran entre 651 y 17557. También se pueden observar una cantidad considerable de 
+valores fuera de los límites los cuáles podrían ser potencialmente outliers.
 Entre ambos vemos una similitud en cuanto a las dimensiones que se manejan.
 
 ```{r}
@@ -187,8 +197,12 @@ boxplot(raw_data_house$sqft_lot/1000,main="sqft lot [1 = 1000 sqft]")
 boxplot(raw_data_house$sqft_lot15/1000,main="sqft lot15 [1 = 1000 sqft]")
 ```
 ### Floors y Sqft_above
-El boxplot de Floors nos dice que el 50% de las casas tienen de 1 a 2 pisos, aunque en la mayor cantidad de las casas se encuentran entre 1 y 3.5 pisos. No se observan valores fuera de los límites los cuáles podrían ser potencialmente outliers.
-El boxplot de sqft_above nos dice que el 50% de los datos van de 1190 a 2210 sqft aunque la mayor cantidad de los datos se encuentran entre 290 y 3740. Se observa una cantidad considerable de valores fuera de los límites los cuáles podrían ser potencialmente outliers.
+El boxplot de Floors nos dice que el 50% de las casas tienen de 1 a 2 pisos, aunque en la mayor 
+cantidad de las casas se encuentran entre 1 y 3.5 pisos. No se observan valores fuera de los límites 
+los cuáles podrían ser potencialmente outliers.
+El boxplot de sqft_above nos dice que el 50% de los datos van de 1190 a 2210 sqft aunque la mayor 
+cantidad de los datos se encuentran entre 290 y 3740. Se observa una cantidad considerable de valores 
+fuera de los límites los cuáles podrían ser potencialmente outliers.
 
 ```{r}
 par(mfrow=c(1,2))
@@ -197,8 +211,13 @@ boxplot(raw_data_house$sqft_above,main="sqft above")
 ```
 ### Sqft_living y Sqft_living15
 
-El boxplot de sqft_living nos dice que el 50% de los datos van de 1427 a 2550 aunque la mayor cantidad de los datos se encuentran entre 290 y 4234. Se observan una cantidad considerable de valores fuera de estos límites los cuáles podrían ser potencialmente outliers.
-El boxplot de sqft_living15 nos dice que el 50% de los datos van de 1490 a 2360 aunque la mayor cantidad de los datos se encuentran entre 185 y 3665. Se observan una cantidad considerable de valores fuera de estos límites los cuáles podrían ser potencialmente outliers. Se observa una similitud en los datos.
+El boxplot de sqft_living nos dice que el 50% de los datos van de 1427 a 2550 aunque la mayor cantidad 
+de los datos se encuentran entre 290 y 4234. Se observan una cantidad considerable de valores fuera 
+de estos límites los cuáles podrían ser potencialmente outliers.
+El boxplot de sqft_living15 nos dice que el 50% de los datos van de 1490 a 2360 aunque la mayor 
+cantidad de los datos se encuentran entre 185 y 3665. Se observan una cantidad considerable de 
+valores fuera de estos límites los cuáles podrían ser potencialmente outliers. Se observa una 
+similitud en los datos.
 
 ```{r}
 par(mfrow=c(1,2))
@@ -208,7 +227,9 @@ boxplot(raw_data_house$sqft_living15,main="sqft living 15")
 ```
 ## Pieplots
 ### Renovated y Has_basement
-El pie plots de renovated nos dice que casi el 96% de las casas no fueron renovadas. Es decir, solo una pequeña cantidad de las casas en estudio fueron renovadas. El pie plots de has_basement nos dice que casi el 61% de las casas no tienen sótanos.
+El pie plots de renovated nos dice que casi el 96% de las casas no fueron renovadas. Es decir, 
+solo una pequeña cantidad de las casas en estudio fueron renovadas. El pie plots de has_basement 
+nos dice que casi el 61% de las casas no tienen sótanos.
 
 ```{r}
 workclass_1 <- table(raw_data_house$renovated)
@@ -226,7 +247,10 @@ legend(-2.1,0.4,legend=names(workclass_2),cex=0.7,yjust=0.2, xjust = -0.1,
        fill = rainbow(2), bty = "n")
 ```
 ### Grade y Condition
-El pie plots de grade nos dice que un poco más del 70% de las casas tienen una calificación buena/regular. El pie plots de condition nos dice que un poco más del 80% de las casas tienen una calificación buena/regular. Con estos números podemos decir que, en general, el dataset contiene casas que no están en mal estado.
+El pie plots de grade nos dice que un poco más del 70% de las casas tienen una calificación 
+buena/regular. El pie plots de condition nos dice que un poco más del 80% de las casas tienen 
+una calificación buena/regular. Con estos números podemos decir que, en general, el dataset 
+contiene casas que no están en mal estado.
 
 ```{r}
 workclass_3<- table(raw_data_house$grade)
@@ -244,7 +268,8 @@ legend(-2.1,0.4,legend=names(workclass_4),cex=0.7,yjust=0.9, xjust = -0.1,
        fill = rainbow(5), bty = "n")
 ```
 ### View y Waterfront
-El pie plots de view nos dice que un poco más del 90% de las casas no fueron vistas. El pie plots de waterfront nos dice que solo alrededor del 1% de las casas tienen vista al lago.
+El pie plots de view nos dice que un poco más del 90% de las casas no fueron vistas. El pie plots 
+de waterfront nos dice que solo alrededor del 1% de las casas tienen vista al lago.
 
 ```{r}
 workclass_5<- table(raw_data_house$view)
@@ -262,10 +287,15 @@ legend(-2.1,0.4,legend=names(workclass_6),cex=0.7,yjust=0.9, xjust = -0.1,
        fill = rainbow(13), bty = "n")
 ```
 ## Histogramas
-Un histograma es la representación gráfica en forma de barras, que simboliza la distribución de un conjunto de datos. Sirven para obtener una "primera vista" general, o panorama, de la distribución de la población, o de la muestra, respecto a una característica, cuantitativa y continua.
+Un histograma es la representación gráfica en forma de barras, que simboliza la distribución 
+de un conjunto de datos. Sirven para obtener una "primera vista" general, o panorama, de la 
+distribución de la población, o de la muestra, respecto a una característica, cuantitativa y continua.
 
 ### Price
-El histograma de Price nos muestra que, si bien la mayor cantidad de las casas cuestan hasta 2000000 de dólares, se cuenta con una alta dispersión en los precios que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Price.
+El histograma de Price nos muestra que, si bien la mayor cantidad de las casas cuestan hasta 
+2000000 de dólares, se cuenta con una alta dispersión en los precios que sospechosamente tiene 
+una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en 
+el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Price.
 
 ```{r}
 hist(raw_data_house$price/1000,main="Histograma de Price",xlab="Price [1 = U$D 1000]",freq=F,col="gray",breaks=10)
@@ -278,7 +308,10 @@ curve(dnorm(x,mean=mean(raw_data_house$price/1000),sd=sd(raw_data_house$price/10
       col = "blue")
 ```
 ### Sqft_living
-El histograma de Sqft_living nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta un poco más de 5000 sqft de living, se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_living.
+El histograma de Sqft_living nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta 
+un poco más de 5000 sqft de living, se cuenta con una alta dispersión en las medidas que sospechosamente 
+tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el 
+análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_living.
 
 ```{r}
 hist(raw_data_house$sqft_living,main="Histograma de sqft_living",xlab="sqft_living",freq=F,col="gray",breaks=10)
@@ -291,7 +324,10 @@ curve(dnorm(x,mean=mean(raw_data_house$sqft_living),sd=sd(raw_data_house$sqft_li
       col = "blue")
 ```
 ### Sqft_lot
-El histograma de Sqft_lot nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta un poco más de 250 sqft de lote, se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_lote.
+El histograma de Sqft_lot nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta 
+un poco más de 250 sqft de lote, se cuenta con una alta dispersión en las medidas que sospechosamente 
+tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el 
+análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_lote.
 
 ```{r}
 hist(raw_data_house$sqft_lot/1000,main="Histograma de sqft_lot",xlab="sqft_lot [1 = 1000 sqft]",freq=F,col="gray",breaks=10)
@@ -306,7 +342,10 @@ curve(dnorm(x,mean=mean(raw_data_house$sqft_lot/1000),sd=sd(raw_data_house$sqft_
 
 ### Sqft_living15
 
-El histograma de Sqft_living15 nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta un poco más de 4000 sqft de living, se cuenta con una dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_living15.
+El histograma de Sqft_living15 nos muestra que, si bien la mayor cantidad de las casas cuentan con 
+hasta un poco más de 4000 sqft de living, se cuenta con una dispersión en las medidas que sospechosamente 
+tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el 
+análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_living15.
 
 ```{r}
 hist(raw_data_house$sqft_living15,main="Histograma de sqft_living15",xlab="sqft_living15",freq=F,col="gray",breaks=10)
@@ -320,7 +359,10 @@ curve(dnorm(x,mean=mean(raw_data_house$sqft_living15),sd=sd(raw_data_house$sqft_
 ```
 ### Sqft_lot15
 
-El histograma de Sqft_lot15 nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta un poco más de 250 sqft de lote, se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_lote15.
+El histograma de Sqft_lot15 nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta 
+un poco más de 250 sqft de lote, se cuenta con una alta dispersión en las medidas que sospechosamente 
+tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el 
+análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_lote15.
 
 ```{r}
 hist(raw_data_house$sqft_lot15/1000,main="Histograma de sqft_lot15",xlab="sqft_lot15 [1 = 1000 sqft]",freq=F,col="gray",breaks=10)
@@ -334,7 +376,9 @@ curve(dnorm(x,mean=mean(raw_data_house$sqft_lot15/1000),sd=sd(raw_data_house$sqf
 ```
 ## Distribuciones respecto a la variable objetivo
 ### Price vs Bathrooms
-La distribución de Price con bathrooms nos muestra que a mayor cantidad de baños las casas pueden tener un incremento en su precio. Esto se mantiene en casas que van de 1500000 con hasta 6 baños. Puede observarse que en casas con valores mayores no sigue este orden.
+La distribución de Price con bathrooms nos muestra que a mayor cantidad de baños las casas pueden 
+tener un incremento en su precio. Esto se mantiene en casas que van de 1500000 con hasta 6 baños. 
+Puede observarse que en casas con valores mayores no sigue este orden.
 
 ```{r}
 boxplot(raw_data_house$price/1000 ~ raw_data_house$bathrooms , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
@@ -342,14 +386,17 @@ boxplot(raw_data_house$price/1000 ~ raw_data_house$bathrooms , col=rgb(0.3,0.5,0
 ```
 ### Price vs Bedrooms
 
-La distribución de Price con bedrooms nos muestra que a mayor cantidad de habitaciones las casas pueden tener un incremento en su precio. Esto se mantiene en casas que van de 1500000 con hasta 6 habitaciones.
+La distribución de Price con bedrooms nos muestra que a mayor cantidad de habitaciones las casas 
+pueden tener un incremento en su precio. Esto se mantiene en casas que van de 1500000 con hasta 
+6 habitaciones.
 
 ```{r}
 boxplot(raw_data_house$price/1000 ~ raw_data_house$bedrooms , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
     xlab="bedrooms",main="Distribución Price vs Bedrooms")
 ```
 ### Price vs Sqft_living
-La distribución de Price con sqft_living nos muestra que a mayor cantidad de sqft de living las casas pueden tener un leve incremento en su precio. Esto se mantiene en casas que van hasta 5000 sqft.
+La distribución de Price con sqft_living nos muestra que a mayor cantidad de sqft de living las casas 
+pueden tener un leve incremento en su precio. Esto se mantiene en casas que van hasta 5000 sqft.
 ```{r}
 ggplot(data=raw_data_house,aes(x=sqft_living,y=price/1000))+
   geom_point(colour=c("firebrick3"))+
@@ -359,7 +406,9 @@ theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_living")+
 
 ```
 ### Price vs Sqft_living15
-La distribución de Price con sqft_living15 nos muestra que a mayor cantidad de sqft de living las casas pueden tener un muy leve incremento en su precio o mantenerse. A partir de 3000 sqft el incremento en el precio es mayor.
+La distribución de Price con sqft_living15 nos muestra que a mayor cantidad de sqft de living las casas 
+pueden tener un muy leve incremento en su precio o mantenerse. A partir de 3000 sqft el incremento en el 
+precio es mayor.
 
 ```{r}
 ggplot(data=raw_data_house,aes(x=sqft_living15,y=price/1000))+
@@ -369,7 +418,9 @@ theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_living15")+
   theme(plot.title=element_text(hjust=0.5,face="bold"))
 ```
 ### Price vs Sqft_lot
-La distribución de Price con sqft_lot y sqft_lot15 nos muestra lo contrario a las variables anteriores. Podemos ver como a valores chicos el precio puede llegar a ser alto y viceversa. A futuro podría no considerarse esta variable ya que sus los valores son sospechosos.
+La distribución de Price con sqft_lot y sqft_lot15 nos muestra lo contrario a las variables anteriores. 
+Podemos ver como a valores chicos el precio puede llegar a ser alto y viceversa. A futuro podría no 
+considerarse esta variable ya que sus los valores son sospechosos.
 
 ```{r}
 ggplot(data=raw_data_house,aes(x=sqft_lot,y=price/1000))+
@@ -379,7 +430,9 @@ theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_lot")+
   theme(plot.title=element_text(hjust=0.5,face="bold"))
 ```
 ### Price vs Sqft_lot15
-La distribución de Price con sqft_lot y sqft_lot15 nos muestra lo contrario a las variables anteriores. Podemos ver como a valores chicos el precio puede llegar a ser alto y viceversa. A futuro podría no considerarse esta variable ya que sus los valores son sospechosos.
+La distribución de Price con sqft_lot y sqft_lot15 nos muestra lo contrario a las variables anteriores. 
+Podemos ver como a valores chicos el precio puede llegar a ser alto y viceversa. A futuro podría no 
+considerarse esta variable ya que sus los valores son sospechosos.
 ```{r}
 ggplot(data=raw_data_house,aes(x=sqft_lot15,y=price/1000))+
   geom_point(colour=c("firebrick3"))+
@@ -388,28 +441,33 @@ theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_lot15")+
   theme(plot.title=element_text(hjust=0.5,face="bold"))
 ```
 ### Price vs Grade
-La distribución de Price con grade nos muestra que a una mayor calificación las casas tienen un mayor precio. Notamos entonces que grade tiene un comportamiento ascendente en este caso.
+La distribución de Price con grade nos muestra que a una mayor calificación las casas tienen un mayor 
+precio. Notamos entonces que grade tiene un comportamiento ascendente en este caso.
 
 ```{r}
 boxplot(raw_data_house$price/1000 ~ raw_data_house$grade , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
     xlab="grade",main="Distribución Price vs Grade")
 ```
 ### Price vs View
-La distribución de Price con view nos muestra que no sigue ningún comportamiento respecto a price. Esto nos indica que view no es de importancia para el análisis.
+La distribución de Price con view nos muestra que no sigue ningún comportamiento respecto a price. 
+Esto nos indica que view no es de importancia para el análisis.
 
 ```{r}
 boxplot(raw_data_house$price/1000 ~ raw_data_house$view , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
     xlab="view",main="Distribución Price vs View")
 ```
 ### Price vs Waterfront
-La distribución de Price con waterfront nos muestra que no sigue ningún comportamiento respecto a price. Sin embargo, se puede notar que al tener una vista al lago, las casas en este caso, comienzan con un precio superior al de las casas que no poseen.
+La distribución de Price con waterfront nos muestra que no sigue ningún comportamiento respecto a price. 
+Sin embargo, se puede notar que al tener una vista al lago, las casas en este caso, comienzan con un 
+precio superior al de las casas que no poseen.
 
 ```{r}
 boxplot(raw_data_house$price/1000 ~ raw_data_house$waterfront , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
     xlab="waterfront",main="Distribución Price vs Waterfront")
 ```
 ### Price vs Renovated
-La distribución de Price con renovated nos muestra que no sigue ningún comportamiento respecto a price. Esto nos indica que renovated no es de importancia para el análisis.
+La distribución de Price con renovated nos muestra que no sigue ningún comportamiento respecto a price. 
+Esto nos indica que renovated no es de importancia para el análisis.
 
 ```{r}
 boxplot(raw_data_house$price/1000 ~ raw_data_house$renovated , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D 1000]" , 
@@ -417,7 +475,9 @@ boxplot(raw_data_house$price/1000 ~ raw_data_house$renovated , col=rgb(0.3,0.5,0
 ```
 ### Price vs Has_basement
 
-La distribución de Price con has_basement nos muestra que no sigue ningún comportamiento respecto a price. Sin embargo, se puede notar que las casas que si tienen sótano pueden llegar a costar aún más que las que no tienen.
+La distribución de Price con has_basement nos muestra que no sigue ningún comportamiento respecto a price. 
+Sin embargo, se puede notar que las casas que si tienen sótano pueden llegar a costar aún más que las que 
+no tienen.
 
 ```{r}
 boxplot(raw_data_house$price/1000 ~ raw_data_house$has_basement , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
@@ -425,7 +485,8 @@ boxplot(raw_data_house$price/1000 ~ raw_data_house$has_basement , col=rgb(0.3,0.
 ```
 
 ### Price vs Sqft_above
-La distribución de Price con sqft_above nos muestra que a mayor cantidad de sqft_above las casas pueden tener un leve incremento en su precio. Esto se mantiene en casas que van hasta 5000 sqft.
+La distribución de Price con sqft_above nos muestra que a mayor cantidad de sqft_above las casas 
+pueden tener un leve incremento en su precio. Esto se mantiene en casas que van hasta 5000 sqft.
 
 ```{r}
 ggplot(data=raw_data_house,aes(x=sqft_above,y=price/1000))+
@@ -435,7 +496,44 @@ theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_above")+
   theme(plot.title=element_text(hjust=0.5,face="bold"))
 ```
 ## Interpretación
-Según el análisis realizado podemos decir que la mayoría de las casas cuestan entre 75000 y 1129575 dólares. Hay casas con valores que están alejados a estos números los cuáles a través de un análisis futuro aún más exhaustivo podremos considerarlos o no como outliers. Redondeando, vemos que la mayor cantidad de las casas cuestan hasta 2000000 de dólares, sin embargo, se cuenta con una alta dispersión en los precios que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Price. En cuanto a las habitaciones la mayor cantidad de las casas tienen entre 1.5 y 5.5. Se observó que a mayor cantidad de habitaciones las casas tienen un incremento en su precio. Esto se mantiene en casas que van de u$1500000 con hasta 6 habitaciones. Con respecto a los baños, la mayoría de las casas tienen entre 0.6 y 3.5. También sucede que a mayor cantidad de baños las casas tienen un incremento en su precio. Esto se mantiene en casas que van de 1500000 con hasta 6 baños. Puede observarse que en casas valores mayores no sigue este orden. Si hablamos de sótanos, casi el 61% de las casas no tienen sótanos. Se puede notar que las casas que si tienen sótano pueden llegar a costar aún más que las que no tienen. Al hablar de dimensiones, se tienen casas mayormente de 520 a 19160 sqft tanto en sqft_lot y sqft_lot15. Sin embargo, se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_lote. Respecto al precio y sus dimensiones (sqft_lot y sqft_lot15) nos muestra lo contrario a las variables anteriores. Podemos ver como a valores chicos el precio puede llegar a ser alto y viceversa. A futuro podría no considerarse esta variable ya que sus los valores son sospechosos. Respecto a las dimensiones sin contar las del sótano, se encuentran casas con entre 290 y 3740 sqft mayormente. Se observa que a mayor cantidad de sqft las casas pueden tener un leve incremento en su precio. Esto se mantiene en casas que van hasta 5000 sqft. Se tiene entre 290 y 4234 sqft de living principalmente. Si bien la mayor cantidad de las casas cuentan con hasta 5000 sqft de living, se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_living. A mayor cantidad de sqft de living las casas pueden tener un leve incremento en su precio. Esto se mantiene en casas que van hasta 5000 sqft. Lo mismo sucede con Sqft_living15. La diferencia está en que sqft_living15 nos muestra que a mayor cantidad de sqft de living las casas pueden tener un muy leve incremento en su precio o mantenerse pero que a partir de 3000 sqft el incremento en el precio es mayor. Si hablamos de renovación, casi el 96% de las casas no pasaron por ello. Las casas en su mayoría (un poco más del 70%) tienen una calificación buena/regular y se observó que a una mayor calificación las casas tienen un mayor precio. Notamos que grade tiene un comportamiento ascendente en este caso. Si nos remitimos a las condiciones de las mismas hay una similitud ya que un poco más del 80% de las casas tienen una calificación buena/regular. Alrededor del 99% de las casas no tienen una vista al lago.Sin embargo, se puede notar que al tener una vista al lago, las casas en este caso, comienzan con un precio superior al de las casas que no poseen. Un poco más del 90% de las casas no fueron vistas.
+Según el análisis realizado podemos decir que la mayoría de las casas cuestan entre 75000 y 1129575 
+dólares. Hay casas con valores que están alejados a estos números los cuáles a través de un análisis 
+futuro aún más exhaustivo podremos considerarlos o no como outliers. Redondeando, vemos que la mayor 
+cantidad de las casas cuestan hasta 2000000 de dólares, sin embargo, se cuenta con una alta dispersión 
+en los precios que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que 
+algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar 
+los valores de interés respecto a Price. En cuanto a las habitaciones la mayor cantidad de las casas 
+tienen entre 1.5 y 5.5. Se observó que a mayor cantidad de habitaciones las casas tienen un incremento 
+en su precio. Esto se mantiene en casas que van de u$1500000 con hasta 6 habitaciones. Con respecto a 
+los baños, la mayoría de las casas tienen entre 0.6 y 3.5. También sucede que a mayor cantidad de baños 
+las casas tienen un incremento en su precio. Esto se mantiene en casas que van de 1500000 con hasta 6 
+baños. Puede observarse que en casas valores mayores no sigue este orden. Si hablamos de sótanos, casi 
+el 61% de las casas no tienen sótanos. Se puede notar que las casas que si tienen sótano pueden llegar 
+a costar aún más que las que no tienen. Al hablar de dimensiones, se tienen casas mayormente de 520 a 
+19160 sqft tanto en sqft_lot y sqft_lot15. Sin embargo, se cuenta con una alta dispersión en las medidas 
+que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores 
+podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de 
+interés respecto a Sqft_lote. Respecto al precio y sus dimensiones (sqft_lot y sqft_lot15) nos muestra 
+lo contrario a las variables anteriores. Podemos ver como a valores chicos el precio puede llegar a 
+ser alto y viceversa. A futuro podría no considerarse esta variable ya que sus los valores son 
+sospechosos. Respecto a las dimensiones sin contar las del sótano, se encuentran casas con entre 290 y 
+3740 sqft mayormente. Se observa que a mayor cantidad de sqft las casas pueden tener un leve incremento 
+en su precio. Esto se mantiene en casas que van hasta 5000 sqft. Se tiene entre 290 y 4234 sqft de 
+living principalmente. Si bien la mayor cantidad de las casas cuentan con hasta 5000 sqft de living, 
+se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la 
+derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a 
+futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_living. A mayor cantidad de 
+sqft de living las casas pueden tener un leve incremento en su precio. Esto se mantiene en casas que 
+van hasta 5000 sqft. Lo mismo sucede con Sqft_living15. La diferencia está en que sqft_living15 nos 
+muestra que a mayor cantidad de sqft de living las casas pueden tener un muy leve incremento en su 
+precio o mantenerse pero que a partir de 3000 sqft el incremento en el precio es mayor. Si hablamos 
+de renovación, casi el 96% de las casas no pasaron por ello. Las casas en su mayoría (un poco más del 70%) 
+tienen una calificación buena/regular y se observó que a una mayor calificación las casas tienen un mayor 
+precio. Notamos que grade tiene un comportamiento ascendente en este caso. Si nos remitimos a las 
+condiciones de las mismas hay una similitud ya que un poco más del 80% de las casas tienen una 
+calificación buena/regular. Alrededor del 99% de las casas no tienen una vista al lago.Sin embargo, 
+se puede notar que al tener una vista al lago, las casas en este caso, comienzan con un precio 
+superior al de las casas que no poseen. Un poco más del 90% de las casas no fueron vistas.
 
 ##############
 # **Dataset con Factores**
@@ -492,7 +590,11 @@ rm(deleteme)
 # **Matriz de Correlación**
 #######################
 
-La correlación es una medida estadística que expresa hasta qué punto dos variables están relacionadas linealmente. Es una herramienta común para describir relaciones simples sin hacer afirmaciones sobre causa y efecto. La matriz de correlación muestra los valores de correlación de Pearson, que miden el grado de relación lineal entre cada par de elementos o variables. A menudo, las variables con valores de correlación mayores que 0.7 se consideran altamente correlacionadas.
+La correlación es una medida estadística que expresa hasta qué punto dos variables están relacionadas 
+linealmente. Es una herramienta común para describir relaciones simples sin hacer afirmaciones sobre 
+causa y efecto. La matriz de correlación muestra los valores de correlación de Pearson, que miden el 
+grado de relación lineal entre cada par de elementos o variables. A menudo, las variables con valores 
+de correlación mayores que 0.7 se consideran altamente correlacionadas.
 
 ## Matriz de correlación con variable objetivo
 
@@ -519,7 +621,15 @@ corrplot(data_correlation_without_price,method="square")
 # **Limpieza**
 ################
 
-Como se pudo observar en el análisis exploratorio de datos, el dataset cuenta con observaciónes con muchos valores atípicos, entonces se resuelve realizar la siguiente limpieza: En la fila 15871 donde una casa tenía 33 habitaciones se considera un error de imputación y se ingresa un 3. No se considera casas cuyo precio sea mayor a U$D 850.000. No se considera casas que no tengan habitaciones o mas de 5. No se considera casas que no tengan baños o que tengan más de 4. Las dimensiones de las casas registradas en 2014 no debe ser mayor a 3200 pies cuadrados. Las dimensiones de las casas registradas en 2015 deben estar entre los 600 y 2850 pies cuadrados. El tamaño del lote de las casas de 2014 no debe ser mayor a los 12000 pies cuadrados. El tamaño del lote de las casas de 2015 no debe ser mayor a los 14000 pies cuadrados. Las dimensiones de las casas sin considerar el sótano no debe ser mayor a los 2700 pies cuadrados.
+Como se pudo observar en el análisis exploratorio de datos, el dataset cuenta con observaciónes con 
+muchos valores atípicos, entonces se resuelve realizar la siguiente limpieza: En la fila 15871 donde 
+una casa tenía 33 habitaciones se considera un error de imputación y se ingresa un 3. No se considera 
+casas cuyo precio sea mayor a U$D 850.000. No se considera casas que no tengan habitaciones o mas de 5. 
+No se considera casas que no tengan baños o que tengan más de 4. Las dimensiones de las casas registradas 
+en 2014 no debe ser mayor a 3200 pies cuadrados. Las dimensiones de las casas registradas en 2015 deben 
+estar entre los 600 y 2850 pies cuadrados. El tamaño del lote de las casas de 2014 no debe ser mayor a 
+los 12000 pies cuadrados. El tamaño del lote de las casas de 2015 no debe ser mayor a los 14000 pies 
+cuadrados. Las dimensiones de las casas sin considerar el sótano no debe ser mayor a los 2700 pies cuadrados.
 
 ```{r}
 dataset <- raw_data_house
@@ -540,7 +650,8 @@ dataset <- filter(dataset,!(bathrooms>3.74))
 # **Dataset Limpio**
 ##############
 
-Con la limpieza de 21613 observaciónes, nos quedamos con 13865. Lo que significa una perdida del 35% de los datos.
+Con la limpieza de 21613 observaciónes, nos quedamos con 13865. Lo que significa una perdida del 35% 
+de los datos.
 
 ```{r}
 dimensiones_clean <- dim(dataset)
@@ -807,35 +918,73 @@ theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_above")+
   theme(plot.title=element_text(hjust=0.5,face="bold"))
 ```
 ## Interpretación
-Se puede observar que en el boxplot de Price ya no se observan valores fuera de los límites. La mediana situada en el centro nos da indicio de que su distribución es un tanto simétrica. El 50% de los valores están entre 294000 y 529130 El histograma de Price nos muestra que la densidad y la distribución coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo estaban en el dataset crudo.
+Se puede observar que en el boxplot de Price ya no se observan valores fuera de los límites. La mediana 
+situada en el centro nos da indicio de que su distribución es un tanto simétrica. El 50% de los valores 
+están entre 294000 y 529130 El histograma de Price nos muestra que la densidad y la distribución coinciden 
+un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan 
+dispersos como lo estaban en el dataset crudo.
 
-En cuanto al boxplot de bedrooms, tampoco observamos valores atípicos. La mediana se encuentra en la parte inferior por lo que podemos decir que tiene una asimetría segada a la derecha. El 50% de los valores están entre 3 y 4. En la distribución Price con bedrooms hay un ligero aumento en el precio en casas que poseen más de 4 baños. Esto se da en casas de hasta 297000 dólares.
+En cuanto al boxplot de bedrooms, tampoco observamos valores atípicos. La mediana se encuentra en la parte 
+inferior por lo que podemos decir que tiene una asimetría segada a la derecha. El 50% de los valores están 
+entre 3 y 4. En la distribución Price con bedrooms hay un ligero aumento en el precio en casas que poseen 
+más de 4 baños. Esto se da en casas de hasta 297000 dólares.
 
-El histograma de sqft_living nos muestra que la densidad y la distribución coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo estaban en el dataset crudo. En la distribución de Price con sqft_living se puede observar que a mayor sqft mayor es el precio. Podemos decir que hay una tendencia un tanto creciente.
+El histograma de sqft_living nos muestra que la densidad y la distribución coinciden un tanto. Se puede 
+observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo 
+estaban en el dataset crudo. En la distribución de Price con sqft_living se puede observar que a mayor 
+sqft mayor es el precio. Podemos decir que hay una tendencia un tanto creciente.
 
-En la distribución de Price con sqft_living15 se puede observar una tendencia levemente creciente. El histograma de sqft_living15 nos muestra que la densidad y la distribución coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo estaban en el dataset crudo.
+En la distribución de Price con sqft_living15 se puede observar una tendencia levemente creciente. 
+El histograma de sqft_living15 nos muestra que la densidad y la distribución coinciden un tanto. 
+Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos 
+como lo estaban en el dataset crudo.
 
-En el boxplot, Living y living15 tampoco tienen valores fuera de los límites. Podemos decir que ambos tienen una distribución un tanto simétrica. El 50% de los valores en living van de 1300 a 2080 y en living 15 de 1390 a 1990.
+En el boxplot, Living y living15 tampoco tienen valores fuera de los límites. Podemos decir que ambos 
+tienen una distribución un tanto simétrica. El 50% de los valores en living van de 1300 a 2080 y en 
+living 15 de 1390 a 1990.
 
-El histograma de sqft_lot nos muestra que la densidad y la distribución coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo estaban en el dataset crudo. El histograma de sqft_lot15 nos muestra que la densidad y la distribución coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo estaban en el dataset crudo. En cuanto a sqft_lot y sqft_lot15, no se observan valores atípicos en los gráficos. El 50% de los datos del primero están entre 4400 y 8400 y el 50% de los datos del segundo están entre 4520 y 8293. Ambos tienen una distribución un tanto simétrica. En la distribución de Price con sqft_lot ni sqft_lot15 no se observa tendencia alguna.
+El histograma de sqft_lot nos muestra que la densidad y la distribución coinciden un tanto. Se puede 
+observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo 
+estaban en el dataset crudo. El histograma de sqft_lot15 nos muestra que la densidad y la distribución 
+coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no 
+están tan dispersos como lo estaban en el dataset crudo. En cuanto a sqft_lot y sqft_lot15, no se 
+observan valores atípicos en los gráficos. El 50% de los datos del primero están entre 4400 y 8400 y 
+el 50% de los datos del segundo están entre 4520 y 8293. Ambos tienen una distribución un tanto simétrica. 
+En la distribución de Price con sqft_lot ni sqft_lot15 no se observa tendencia alguna.
 
 El pie plot de renovated nos indica que mas del 96% de las casas no fueron renovadas.
 
 El pie plot de has_basement nos dice que mas del 60% de las casas no tienen sótano.
 
-El pie plot de grade nos dice que mas del 80% de las casas están en condiciones buenas/regulares. En la distribución Price con grade se observa una tendencia creciente a partir del grado 8, lo que nos dice que a mayor grado mayor precio en ese caso. Aunque existen casas que teniendo un grade menor a 8, cuestan igual o más.
+El pie plot de grade nos dice que mas del 80% de las casas están en condiciones buenas/regulares. 
+En la distribución Price con grade se observa una tendencia creciente a partir del grado 8, lo que nos 
+dice que a mayor grado mayor precio en ese caso. Aunque existen casas que teniendo un grade menor a 8, 
+cuestan igual o más.
 
-El pie plot de condition nos dice que mas cerca del 90% de las casas están en buenas condiciones. En la distribución Price con condition se observa que las casas de condition 5 son ligeramente mas caras que las de menor condición. También nos dice las casas con condiciones 1 y 2 no llegan a ser muy costosas como las de demás condición.
+El pie plot de condition nos dice que mas cerca del 90% de las casas están en buenas condiciones. 
+En la distribución Price con condition se observa que las casas de condition 5 son ligeramente mas 
+caras que las de menor condición. También nos dice las casas con condiciones 1 y 2 no llegan a ser 
+muy costosas como las de demás condición.
 
-El pie plot de view nos dice que cerca del 95% de las casas no fueron vistas. En la distribución de Price con view hay un leve aumento en el precio de las casas que fueron vistas mas de dos veces.
+El pie plot de view nos dice que cerca del 95% de las casas no fueron vistas. En la distribución de 
+Price con view hay un leve aumento en el precio de las casas que fueron vistas mas de dos veces.
 
-El pie plot de waterfront nos dice que casi el 100% de las casas no tiene una vista al lago. En la distribución de Price con waterfront se observa que la mayoría de las casas no poseen vista al lago pero que sin embargo las casas que si poseen una vista al lago son costosas.
+El pie plot de waterfront nos dice que casi el 100% de las casas no tiene una vista al lago. En la 
+distribución de Price con waterfront se observa que la mayoría de las casas no poseen vista al lago 
+pero que sin embargo las casas que si poseen una vista al lago son costosas.
 
-En el boxplot de above no se observan valores fuera de los límites. El 50% de los datos está entre 1100 y 1740. Tiene una distribución un tanto simétrica. En la distribución de Price con above se puede observar una tendencia levemente creciente. A partir de 1500 sqft se observa un mayor crecimiento en el precio.
+En el boxplot de above no se observan valores fuera de los límites. El 50% de los datos está entre 
+1100 y 1740. Tiene una distribución un tanto simétrica. En la distribución de Price con above se puede 
+observar una tendencia levemente creciente. A partir de 1500 sqft se observa un mayor crecimiento en el 
+precio.
 
-En el boxplot de bathrooms tampoco se observan valores atípicos. Tiene también una distribución un tanto simétrica. El 50% de los datos está entre 1.5 y 2.5 En la distribución Price con bathrooms podemos ver un leve aumento en el precio de las casas que poseen mayor cantidad de baños. Esto se da en casas menores a 590000 dólares.
+En el boxplot de bathrooms tampoco se observan valores atípicos. Tiene también una distribución un tanto 
+simétrica. El 50% de los datos está entre 1.5 y 2.5 En la distribución Price con bathrooms podemos ver 
+un leve aumento en el precio de las casas que poseen mayor cantidad de baños. Esto se da en casas menores 
+a 590000 dólares.
 
-El boxplot de floors no cuenta con valores fuera de los límites. Tiene una distribución segada a la derecha se podría decir y el 50% de los datos se encuentran entre 1 y 2.
+El boxplot de floors no cuenta con valores fuera de los límites. Tiene una distribución segada a la 
+derecha se podría decir y el 50% de los datos se encuentran entre 1 y 2.
 
 En la distribución de Price con yr_build no se observa tendencia alguna.
 
@@ -897,18 +1046,29 @@ corrplot(clean_data_correlation_without_price,method="square")
 regsubset.full <- regsubsets(price ~ ., data = dataset)
 ```
 ### Sumario de regsubset
-Compara todos los posibles modelos usando un conjunto especifico de predictores. Muestra los modelos con mejores ajustes que contienen un predictor, dos predictores,…, n predictores. Al final contamos con un numero de modelos y sus respectivos resumenes estadisticos. La ventaja es que es conceptualmente claro. La desventaja es que es computacionalmente inviable, hay muchos modelos a ejecutar. Para el presente caso son 15 predictores lo que equivaldría a 2^15 = 32.768 modelos
+Compara todos los posibles modelos usando un conjunto especifico de predictores. Muestra los modelos con 
+mejores ajustes que contienen un predictor, dos predictores,…, n predictores. Al final contamos con un 
+numero de modelos y sus respectivos resumenes estadisticos. La ventaja es que es conceptualmente claro. 
+La desventaja es que es computacionalmente inviable, hay muchos modelos a ejecutar. Para el presente 
+caso son 15 predictores lo que equivaldría a 2^15 = 32.768 modelos
 
 ```{r}
 sumario.regsubset <- summary(regsubset.full)
 sumario.regsubset
 ```
-La matriz de 8 filas es la cantidad de variables a evaluar con la variable objetivo. El número de fila es la cantidad de variables, la estrella en cada celda son las variables a tener en cuenta. Esto significa que si se quisiera hacer el análisis con una variable bastaría con grade. Con dos variables grade, yr_built y así sucesivamente.
+La matriz de 8 filas es la cantidad de variables a evaluar con la variable objetivo. El número de fila es 
+la cantidad de variables, la estrella en cada celda son las variables a tener en cuenta. Esto significa 
+que si se quisiera hacer el análisis con una variable bastaría con grade. Con dos variables grade, yr_built 
+y así sucesivamente.
 
 ## Stepwise Selection
-El metodo selecciona un modelo agregando y eliminando predictores individuales, de una a la vez, basado en su significancia estadística.
+El metodo selecciona un modelo agregando y eliminando predictores individuales, de una a la vez, basado en 
+su significancia estadística.
 
-El estadístico Cp compara la precision y el sesgo del modelo completo con modelos que incluyan un subconjunto de predictores. Cp, AIC, BIC y R^2 ajustado son tecnicas que ajustan el error de entrenamiento para el tamaño del modelo y pueden ser usados para seleccionar entre un conjunto de modelos con diferentes numeros de variables.
+El estadístico Cp compara la precision y el sesgo del modelo completo con modelos que incluyan un 
+subconjunto de predictores. Cp, AIC, BIC y R^2 ajustado son tecnicas que ajustan el error de entrenamiento 
+para el tamaño del modelo y pueden ser usados para seleccionar entre un conjunto de modelos con diferentes 
+numeros de variables.
 
 ### Cp
 ```{r}
@@ -966,7 +1126,11 @@ points(value.min,sumario.regsubset$adjr2[value.max],col = "red",cex = 2,pch = 20
 ```{r}
 plot(regsubset.full,scale="adjr2")
 ```
-Según las técnicas empleadas, nos recomiendan seleccionar un total de 8 variables las cuales son: sqft_living, condition, grade, view, yr_built, sqft_living, sqft_lot15 y has_basement. Este estudio sumado al anterior, nos permiten evaluar aún mas las variables a elegir. Podemos ver que hay coincidencias entre las variables elegidas a partir del análisis exploratorio y este último estudio realizado. Procederemos a seguir analizando las variables con otros métodos.
+Según las técnicas empleadas, nos recomiendan seleccionar un total de 8 variables las cuales son: 
+sqft_living, condition, grade, view, yr_built, sqft_living, sqft_lot15 y has_basement. Este estudio 
+sumado al anterior, nos permiten evaluar aún mas las variables a elegir. Podemos ver que hay 
+coincidencias entre las variables elegidas a partir del análisis exploratorio y este último estudio 
+realizado. Procederemos a seguir analizando las variables con otros métodos.
 
 ### Coeficientes
 
@@ -976,7 +1140,8 @@ coef(regsubset.full,8)
 
 ### Conjunto de validación
 
-Para el caso de estudio de House Price, se debera proceder a dividir las observaciones en dos: primero en entrenamiento (train, 70 %) y prueba (test, 30 %). Las proporciones pueden variar.
+Para el caso de estudio de House Price, se debera proceder a dividir las observaciones en dos: primero 
+en entrenamiento (train, 70 %) y prueba (test, 30 %). Las proporciones pueden variar.
 
 ```{r}
 index <- createDataPartition(dataset$price, p = 0.7, list = FALSE)
@@ -984,7 +1149,9 @@ data.train <- dataset[index, ]
 data.test <- dataset[-index, ]
 ```
 
-Ejecutamos la instruccion regsubsets con los datos de entranamiento, a su vez, se busca que el numero máximo de parámetros sea 8 (nvmax) y el metodo forward. Posteriormente se muestra el sumario de los resultados.
+Ejecutamos la instruccion regsubsets con los datos de entranamiento, a su vez, se busca que el numero 
+máximo de parámetros sea 8 (nvmax) y el metodo forward. Posteriormente se muestra el sumario de los 
+resultados.
 
 ```{r}
 set.seed(10)
@@ -1056,7 +1223,8 @@ rmse.ridge
 out <- glmnet(x.ridge, y.ridge, alpha = 0)
 predict(out, type = "coefficients", s = bestlam)
 ```
-Podemos observar que Ridge nos selecciona principalmente sqft_lot15, sqftlivin15, zipcode, grade, sqft_lot, sqft_living, date.
+Podemos observar que Ridge nos selecciona principalmente sqft_lot15, sqftlivin15, zipcode, grade, sqft_lot, 
+sqft_living, date.
 
 ### Lasso
 
@@ -1081,7 +1249,10 @@ indices <- sample(c(TRUE,FALSE),nrow(dataset),replace=TRUE)
 cv.out<- cv.glmnet(x[indices,],y[indices],alpha=1)
 coef(cv.out)
 ```
-Como se observa en el listado de coeficientes algunos predictores están indicados con un punto(.), significa que su penalidad fue igual a 0 y no deben tenerse en cuenta para el modelo. Los que si deben tenerse en cuenta principalmente son: sqft_living, sqft_lot, grade, sqft_living15, y sqft_lot15 luego podemos seguir con bathrooms, zipcode y has_basement.
+Como se observa en el listado de coeficientes algunos predictores están indicados con un punto(.), 
+significa que su penalidad fue igual a 0 y no deben tenerse en cuenta para el modelo. Los que si deben 
+tenerse en cuenta principalmente son: sqft_living, sqft_lot, grade, sqft_living15, y sqft_lot15 luego 
+podemos seguir con bathrooms, zipcode y has_basement.
 
 #### Ploteo del Modelo de Lasso
 
@@ -1143,7 +1314,9 @@ Selección de variables:
 # **Regresión Líneal**
 ##################
 
-La regresión lineal se usa para buscar relaciones significativa entre variables y predecir el valor de una variable dado el valor de otra. Los modelos con un predictor se denominan regresión simple. Los modelos con más de un predictor se conocen como regresión lineal múltiple.
+La regresión lineal se usa para buscar relaciones significativa entre variables y predecir el valor de 
+una variable dado el valor de otra. Los modelos con un predictor se denominan regresión simple. Los 
+modelos con más de un predictor se conocen como regresión lineal múltiple.
 
 ## Dataset Crudo
 
@@ -1156,7 +1329,11 @@ dataset.selection.raw <- raw_data_house[c("price","bathrooms","sqft_living","yr_
 mlr_raw <- lm(formula=price ~ ., data = dataset.selection.raw)
 summary(mlr_raw)
 ```
-Podemos ver en la parte superior de los resultados que hay una variación entre los valores máximos y mínimos y los cuartiles por lo que no hay una marcada simetría. En cuanto, a la significancia vemos que todos suman al modelo ya que t value es significativamente distinto de cero y todos tienen un código alto de significancia. El coeficiente de determinación R-Squared es bueno al igual que Adjusted R-Squared ya que tienen valores altos.
+Podemos ver en la parte superior de los resultados que hay una variación entre los valores máximos y 
+mínimos y los cuartiles por lo que no hay una marcada simetría. En cuanto, a la significancia vemos que 
+todos suman al modelo ya que t value es significativamente distinto de cero y todos tienen un código 
+alto de significancia. El coeficiente de determinación R-Squared es bueno al igual que Adjusted R-Squared 
+ya que tienen valores altos.
 
 ### Índice de Confianza
 
@@ -1167,7 +1344,11 @@ confint(mlr_raw)
 ```{r}
 stem(mlr_raw$residuals)
 ```
-El histograma debe presentar caracterıstica de estar normalmente distribuido. Vemos que no la presenta. Hay que tener en cuenta que esto se realizó con el dataset crudo por lo que mas adelante haremos lo mismo pero con el dataset limpio. Decidimos agregar esta regresión ya que luego de probar con diferentes limpiezas, esta es la que mejor resultado nos arroja ya que el adjusted R-Squred es el mas alto que pudimos obtener y no queriamos descartarlo.
+El histograma debe presentar caracterıstica de estar normalmente distribuido. Vemos que no la presenta. 
+Hay que tener en cuenta que esto se realizó con el dataset crudo por lo que mas adelante haremos lo mismo 
+pero con el dataset limpio. Decidimos agregar esta regresión ya que luego de probar con diferentes 
+limpiezas, esta es la que mejor resultado nos arroja ya que el adjusted R-Squred es el mas alto que 
+pudimos obtener y no queriamos descartarlo.
 
 ### Predecidos vs Actuales
 
@@ -1178,7 +1359,8 @@ abline(a=0,b=1,col="blue",lwd=2))
 ```
 ### Residuales
 
-Podemos decir que en general es una buena gráfica, sin embargo, se pueden observar puntos alejados del resto los cuales pueden ser analizados y eliminados o modificados uno.
+Podemos decir que en general es una buena gráfica, sin embargo, se pueden observar puntos alejados del 
+resto los cuales pueden ser analizados y eliminados o modificados uno.
 
 ```{r}
 plot(residuals(mlr_raw))
@@ -1187,13 +1369,21 @@ text(residuals(mlr_raw))
 ```
 ### Ploteo del Modelo
 
-En la gráfica de residuos ́no hay ningun patrón. El promedio de la gráfica residual no se “pierde a cero”. Se observan valores alejados y dispersos que afectan a la gráfica.
+En la gráfica de residuos ́no hay ningun patrón. El promedio de la gráfica residual no se “pierde a cero”. 
+Se observan valores alejados y dispersos que afectan a la gráfica.
 
-QQ-plot muestra si los residuos se distribuyen normalmente. Idealmente, las muestras deben estar en la lınea roja. Vemos que al comienzo y al final las muestras se "desprenden" de la línea roja por lo que si las muestras no estan en la lınea entonces se debe seguir trabjando en el modelo para que el residuo sea normal. Vemos que hay valores que están afectando mucho a la gráfica por lo que hay que prestarles atención.
+QQ-plot muestra si los residuos se distribuyen normalmente. Idealmente, las muestras deben estar en la 
+lınea roja. Vemos que al comienzo y al final las muestras se "desprenden" de la línea roja por lo que si 
+las muestras no estan en la lınea entonces se debe seguir trabjando en el modelo para que el residuo sea 
+normal. Vemos que hay valores que están afectando mucho a la gráfica por lo que hay que prestarles atención.
 
-En Scale-Location Plot el grafico muestra cómo se distribuyen los residuos y podemos ver que existe una varianza entre ellos que al comienzo es menor y que después se acrecenta
+En Scale-Location Plot el grafico muestra cómo se distribuyen los residuos y podemos ver que existe una 
+varianza entre ellos que al comienzo es menor y que después se acrecenta
 
-En Residuals vs Leverage Plot el plot ayuda a encontrar cuales son las observaciones influyentes. Aquı necesitamos verificar los puntos que estan fuera de la lınea discontinua. Un punto fuera de la lınea sera un punto influyente y su eliminación ́afectara los coeficientes de regresión. Se pueden observar varios puntos fuera de la línea.
+En Residuals vs Leverage Plot el plot ayuda a encontrar cuales son las observaciones influyentes. Aquı 
+necesitamos verificar los puntos que estan fuera de la lınea discontinua. Un punto fuera de la lınea sera 
+un punto influyente y su eliminación ́afectara los coeficientes de regresión. Se pueden observar varios 
+puntos fuera de la línea.
 
 ```{r}
 plot(mlr_raw)
@@ -1226,7 +1416,11 @@ summary(lmfit1_mlr)
 ```
 #### RMSE
 
-El error cuadrático medio (RMSE) mide la cantidad de error que hay entre dos conjuntos de datos. En otras palabras, compara un valor predicho y un valor observado o conocido. Los valores más bajos de RMSE indican un mejor ajuste. RMSE es una buena medida de la precisión con que el modelo predice la respuesta, y es el criterio más importante para ajustar si el propósito principal del modelo es la predicción.
+El error cuadrático medio (RMSE) mide la cantidad de error que hay entre dos conjuntos de datos. 
+En otras palabras, compara un valor predicho y un valor observado o conocido. Los valores más bajos de 
+RMSE indican un mejor ajuste. RMSE es una buena medida de la precisión con que el modelo predice la 
+respuesta, y es el criterio más importante para ajustar si el propósito principal del modelo es la 
+predicción.
 
 ```{r}
 predicted_test_mlr <- predict(lmfit1_mlr,test_data_mlr)
@@ -1281,7 +1475,8 @@ ggplot(varImp(lmfit3_mlr))
 ```
 Vemos que en cuanto a la importancia se arrojan las mismas características que en los gráficos anteriores.
 
-En cuanto a los RMSE, los ultimos dos, Cross validation y Boostrap arrojan el valor mas alto (2.172422e+05) por lo que el primero indica un mejor ajuste (2.084357e+05).
+En cuanto a los RMSE, los ultimos dos, Cross validation y Boostrap arrojan el valor mas alto (2.172422e+05) 
+por lo que el primero indica un mejor ajuste (2.084357e+05).
 
 ## Dataset Limpio
 ```{r}
@@ -1293,7 +1488,11 @@ dataset.selection.clean <- dataset[c("price","bedrooms","sqft_living","yr_built"
 mlr_clean <- lm(formula=price ~ ., data = dataset.selection.clean)
 summary(mlr_clean)
 ```
-Podemos ver en la parte superior de los resultados no existe el mismo grado de variación entre los valores máximos y mínimos y los cuartiles. El dataset limpio es mas simétrico que el crudo. En cuanto, a la significancia vemos que no hay variaciones significativas respecto al análisis anterior. El coeficiente de determinación R-Squared es bueno al igual que Adjusted R-Squared ya que tienen valores altos pero en este caso es menor en un 20% al que se obtuvo con el dataset anterior.
+Podemos ver en la parte superior de los resultados no existe el mismo grado de variación entre los 
+valores máximos y mínimos y los cuartiles. El dataset limpio es mas simétrico que el crudo. En cuanto, 
+a la significancia vemos que no hay variaciones significativas respecto al análisis anterior. 
+El coeficiente de determinación R-Squared es bueno al igual que Adjusted R-Squared ya que tienen valores 
+altos pero en este caso es menor en un 20% al que se obtuvo con el dataset anterior.
 
 ### Índice de Confianza
 ```{r}
@@ -1312,7 +1511,9 @@ plot(predict(mlr_clean),dataset.selection.clean$price/1000, ylab="Price[ 1 = U$D
 abline(a=0,b=1,col="blue",lwd=2))
 ```
 ### Residuales
-Podemos decir que en general es una buena gráfica, mejor que la obtenida con el dataset anterior ya que se eliminaron los puntos alejados. Sin embargo, aparecieron nuevos puntos, los cuales se pueden analizar y limpiar.
+Podemos decir que en general es una buena gráfica, mejor que la obtenida con el dataset anterior ya que 
+se eliminaron los puntos alejados. Sin embargo, aparecieron nuevos puntos, los cuales se pueden analizar 
+y limpiar.
 
 ```{r}
 plot(residuals(mlr_clean))
@@ -1396,14 +1597,20 @@ defaultSummary(model_test_3_mlr_clean)
 ```{r}
 ggplot(varImp(lmfit3_mlr_clean))
 ```
-Podemos decir que no hay variaciones significativas. El coeficiente de determinación R-Squared es bueno al igual que Adjusted R-Squared ya que tienen valores altos pero en este caso es menor en un 20% (47.53%) al que se obtuvo con el dataset anterior(64.98%). Podemos decir que las gráficas mejoraron respecto las anteriores. De todas maneras, se siguen observando valores alejados, dispersos e influyentes. Analizando lo obtenido, vemos que siguen apareciendo las mismas caracteristicas como las mas importantes. En cuanto a los RMSE, Boostrap y Cross Validation poseen el mismo valor(1.155187e+05) y
+Podemos decir que no hay variaciones significativas. El coeficiente de determinación R-Squared es bueno 
+al igual que Adjusted R-Squared ya que tienen valores altos pero en este caso es menor en un 20% (47.53%) 
+al que se obtuvo con el dataset anterior(64.98%). Podemos decir que las gráficas mejoraron respecto las 
+anteriores. De todas maneras, se siguen observando valores alejados, dispersos e influyentes. Analizando 
+lo obtenido, vemos que siguen apareciendo las mismas caracteristicas como las mas importantes. En cuanto 
+a los RMSE, Boostrap y Cross Validation poseen el mismo valor(1.155187e+05) y
 el mayor que es 1.167813e+05 se obtiene evaluando el overfitting.
 
 ##############
 # **Regresión Polinomial**
 ##############
 
-La Regresión Polinomial es un caso especial de la Regresión Lineal, extiende el modelo lineal al agregar predictores adicionales, obtenidos al elevar cada uno de los predictores originales a una potencia.
+La Regresión Polinomial es un caso especial de la Regresión Lineal, extiende el modelo lineal al agregar 
+predictores adicionales, obtenidos al elevar cada uno de los predictores originales a una potencia.
 
 ## **Dataset Crudo**
 
@@ -1412,7 +1619,8 @@ mlr_poly_raw <- lm(formula = price ~ poly(sqft_living,2)+bathrooms+yr_built+
                    grade+waterfront+view+bedrooms,data=dataset.selection.raw)
 summary(mlr_poly_raw)
 ```
-Podemos observar que se agregó el predictor sqft_living. Los resultados son buenos y se logra casi un 68% en Adjusted R-squared. Por lo tanto al aplicar una regresión
+Podemos observar que se agregó el predictor sqft_living. Los resultados son buenos y se logra casi un 
+68% en Adjusted R-squared. Por lo tanto al aplicar una regresión
 polinomial con el dataset crudo es más optimo para la predicción de los precios
 de las casas.
 
@@ -1519,7 +1727,12 @@ defaultSummary(model_test_3)
 ```{r}
 ggplot(varImp(lmfit3))
 ```
-Respecto a regresión lineal, se obtuvieron mejores resultados, se llegó a un 68% Adjusted R-Squared y se puede observar una mejora en las gráficas de la validación del modelo a pesar de que aún siguen apareciendo cuestiones a estudiar y mejorar. Respecto a Cross validation y Boostrap logran un valor mas alto(2.172422e+05) de RMSE que el primero(2.098646e+05) logrando este también un Adjusted R-Squared del 68%. En todos aparecen las mismas características como importantes aunque en el primero bathrooms tiene mas relevancia que bedrooms.
+Respecto a regresión lineal, se obtuvieron mejores resultados, se llegó a un 68% Adjusted R-Squared y 
+se puede observar una mejora en las gráficas de la validación del modelo a pesar de que aún siguen 
+apareciendo cuestiones a estudiar y mejorar. Respecto a Cross validation y Boostrap logran un valor 
+mas alto(2.172422e+05) de RMSE que el primero(2.098646e+05) logrando este también un Adjusted R-Squared 
+del 68%. En todos aparecen las mismas características como importantes aunque en el primero bathrooms 
+tiene mas relevancia que bedrooms.
 
 ## **Dataset Limpio**
 ```{r}
@@ -1652,7 +1865,9 @@ ggplot(varImp(lmfit3_poly_clean))
 ```
 
 Obtenemos en Adjusted R-Squared(48%) lo cuál sigue siendo un valor de significancia
-bajo. Hay mejoras notables en las gráficas de la validación del modelo. Respecto a Cross validation y Boostrap logran un mayor RMSE(1.155187e+05) que el primero(1.141740e+05). En todos aparecen las mismas variables como importantes aunque en el primer gráfico
+bajo. Hay mejoras notables en las gráficas de la validación del modelo. Respecto a Cross validation y 
+Boostrap logran un mayor RMSE(1.155187e+05) que el primero(1.141740e+05). En todos aparecen las mismas 
+variables como importantes aunque en el primer gráfico
 de importancia tiene mas relevancia grade que yr_built y siempre en último lugar
 la variable bedrooms.
 
@@ -1846,10 +2061,14 @@ ggarrange(p1, p2, common.legend = TRUE)
 ```
 ##### Ancho de Silhouette K=5
 Teniendo en cuenta el ancho de Silhouette:
-- El clúster 1 tiene un ancho de -0.01 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
-- El clúster 2 tiene un ancho de -0.07 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
-- El clúster 3 tiene un ancho de -0.22 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
-- El clúster 4 tiene un ancho de  0.07 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
+- El clúster 1 tiene un ancho de -0.01 es indicativo que la observacion se encuentra en un punto intermedio 
+entre dos clústeres.
+- El clúster 2 tiene un ancho de -0.07 es indicativo que la observacion se encuentra en un punto intermedio 
+entre dos clústeres.
+- El clúster 3 tiene un ancho de -0.22 es indicativo que la observacion se encuentra en un punto intermedio 
+entre dos clústeres.
+- El clúster 4 tiene un ancho de  0.07 es indicativo que la observacion se encuentra en un punto intermedio 
+entre dos clústeres.
 - El clúster 5 tiene un ancho de  0.54 es indicativo que la observacion fue asignada al clúster correcto.
 ```{r}
 k.means.fit.5 <- eclust(x = dataset.scaled.raw.5, FUNcluster = "kmeans", k = 5, seed = 123,
@@ -2058,9 +2277,12 @@ ggarrange(p1, p2, common.legend = TRUE)
 Teniendo en cuenta el ancho de Silhouette:
 - El clúster 1 tiene un ancho de 0.72 es indicativo que la observacion fue asignada al clúster correcto.
 - El clúster 2 tiene un ancho de 0.72 es indicativo que la observacion fue asignada al clúster correcto.
-- El clúster 3 tiene un ancho de 0.03 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
-- El clúster 4 tiene un ancho de 0.03 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
-- El clúster 5 tiene un ancho de -0.03 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
+- El clúster 3 tiene un ancho de 0.03 es indicativo que la observacion se encuentra en un punto intermedio 
+entre dos clústeres.
+- El clúster 4 tiene un ancho de 0.03 es indicativo que la observacion se encuentra en un punto intermedio 
+entre dos clústeres.
+- El clúster 5 tiene un ancho de -0.03 es indicativo que la observacion se encuentra en un punto intermedio 
+entre dos clústeres.
 ```{r}
 k.means.fit.5 <- eclust(x = dataset.scaled.clean.5, FUNcluster = "kmeans", k = 5, seed = 123,
 hc_metric = "euclidean", nstart = 50, graph = FALSE)
@@ -2101,4 +2323,3 @@ crudo un estudio de predicción de precios teniendo en cuenta algunas caracterí
 variables seleccionadas(tamaño de la casa, tamaño del terreno, cantidad de baños, cantidad de habitaciones 
 y la calificación del organismo público(grado)) mediante la aplicación de alguna técnica como por ejemplo, 
 árbol de decisiones.
-
