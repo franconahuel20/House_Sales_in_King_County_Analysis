@@ -1,0 +1,2104 @@
+---
+title: "HousePriceDataAnalysis"
+author: Herrera Franco Nahuel - Inteligencia Empresarial y Data Mining 5K5 - Universidad Tecnológica Nacional - 
+Facultad Regional Tucumán
+date: "03/06/2022"
+output:
+  html_notebook:
+    df_print: paged
+    fig:height: 4
+    fig:width: 6
+    theme: readable
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+    toc:float: yes
+---
+#####################
+# **Introducción**
+#####################
+El dataset a trabajar contiene información de los precios de las casas de la ciudad King County del 
+estado de Seattle, Estados Unidos. Dicha información corresponde al periodo que va desde mayo 2014 
+a mayo 2015. Contiene 20 variables y 21613 observaciones. La columna objetivo elegida para el análisis es 
+"price". Este trabajo, iniciará con el análisis exploratorio de datos, la limpieza de valores atípicos, 
+luego se seguirá con técnicas para la selección de variables, regresión lineal y múltiple y por último 
+clustering para agrupar observaciones con valores similares.
+
+#####################
+# **Librerías** 
+#####################
+
+```{r}
+library("dplyr")
+library("corrplot")
+library("moments")
+library("psych")
+library("dataPreparation")
+library("data.table")
+library("caret")
+library("ggplot2")
+library("lmtest")
+library('mlr3data')
+library("leaps")
+library("fastDummies")
+library("glmnet")
+library("factoextra")
+library("ggpubr")
+library("plotmo")
+```
+
+#####################
+# **Diccionario de Datos** 
+#####################
+Para orientación del lector se realizó el siguiente diccionario de cada feature
+del dataset:
+
+- `id`: Identificación única de una casa.
+- `date`: Fecha en la cual la casa fue vendida.
+- `bedrooms`: Número de habitaciones/Casas.
+- `bathrooms`: Números de baños/Habitaciones.
+- `sqft_living`: Dimensión de la casa (pies cuadrados).
+- `sqft_lot`: Dimensión del lote (pies cuadrados).
+- `floors`: Número total de pisos de la casa.
+- `waterfront`: Si la casa tiene una vista a un espejo de agua (lago, rio, etc).
+- `view`: Si la casa ha sido vista.
+- `condition`: Indica la condición general de la casa. (1: la propiedad no presenta buena
+condición, 5: la condición de la casa es excelente).
+- `grade`: Calificación general otorgada por un organismo (1: Pobre, 13: Excelente).
+- `sqft_aboves`: Dimensiones de la casa aparte del sótano.
+- `sqft_basement`: Dimensiones del sótano.
+- `yr_built`: Año de construcción de la vivienda.
+- `yr_renovated`: Año cuando la casa recibió una renovación.
+- `zipcode`: Código Postal.
+- `lat`: Latitud de Coordenada.
+- `long`: Longitud de Coordenada.
+- `sqft_living15`: Dimensiones de la sala de estar en 2015 (implica algunas renovaciones).
+Esto podría o no haber afectado el área del lote.
+- `sqft_lot15`: Área en 2015 (implica algunas renovaciones).
+
+################
+# **Dataset** 
+################
+
+## Carga
+```{r}
+raw_data_house <- mlr3data::kc_housing
+```
+## Directorio de Trabajo
+```{r}
+setwd(getwd())
+```
+## Dimensiones
+```{r}
+#Mostramos las dimensiones del dataset
+dimensiones <- dim(raw_data_house)
+dimensiones
+```
+## Muestra
+```{r}
+head(raw_data_house,5)
+```
+
+## Sumario
+A partir del sumario podemos tener una primera aproximación de los datos. Se puede observar los 
+mínimos valores, los máximos y las medias, entre otra información. Esto sumado a la búsqueda exhaustiva 
+en la web sobre los posibles valores que podría tomar cada variable, además de permitirnos conocer más 
+en profundidad las características de cada una, dieron los primeros indicios sobre dónde podrían existir 
+los potencialmente outliers. Por ejemplo, entre la información que podemos obtener nos dice que las casas 
+corresponden al período 2014-2015 con precios muy distantes que van desde 75000 dólares a 7.700.000. 
+La mayoría de ellas no tienen una vista al agua. Los pisos van de 1 a 3.5 y hay casas sin habitaciones 
+y hasta una sospechosa casa con 33 habitaciones. En cuanto a los baños, hay casas que no poseen ninguno 
+y hay casas que tienen hasta 8 baños. El promedio en cuanto a la condición y grade nos dice que 
+generalmente son casas regulares, que no están en sus óptimas condiciones pero que tampoco están en 
+muy malas. A partir de observaciones realizadas en un BD se pueden advertir qué determinados valores 
+son muy diferentes a las otras observaciones del mismo grupo de datos. Estos datos distorsionan los 
+resultados del analisis y por esta razón debemos identificarlos y tratarlos de manera adecuada.
+```{r}
+sumario <- summary(raw_data_house)
+sumario
+```
+## Estructura
+```{r}
+#Estructura
+str(raw_data_house)
+```
+
+############################
+# **Análisis Exploratorio de Datos(Dataset Crudo)**
+###########################
+
+## Encontrar valores nulos
+```{r}
+#Encontrar valores nulos
+data.frame(Valores.nulos = sapply(raw_data_house,function(x){sum(is.na(x))}))
+```
+## Convertir variables con observaciónes nulas a categóricas
+Convertimos las variables con observaciónes nulas a categóricas para no perder representatividad, 
+ya que una variable(yr_renovated) al tener 20699 observaciónes nulas y el dataset tiene 21613, solo 
+quedarían 914 observaciónes.
+```{r}
+#Convertimos las variables con observaciónes nulas a categóricas.
+raw_data_house$renovated = as.numeric(!is.na(raw_data_house$yr_renovated))
+raw_data_house$has_basement = as.numeric(!is.na(raw_data_house$sqft_basement))
+#Eliminamos las variables con observaciónes nulas
+raw_data_house$yr_renovated = NULL
+raw_data_house$sqft_basement = NULL
+```
+
+## Muestra
+```{r}
+head(raw_data_house,10)
+```
+## Boxplots
+Un diagrama de caja o boxplot es un método estandarizado para representar gráficamente una serie de 
+datos numéricos a través de sus cuartiles. De esta manera, se muestran a simple vista la mediana y los 
+cuartiles de los datos, ​ y también ayudan a identificar puntos de datos interesantes o atípicos. Estos 
+últimos se representan como puntos de datos más allá de los bigotes.
+
+### Price y Bedrooms
+El boxplot de Price nos indica que el 50% de los precios de las casas van de 321950 a 645000 dólares 
+aunque si bien la mayor cantidad de los datos se encuentran entre 75000 y 1129575. También se pueden 
+observar una cantidad considerable de valores fuera de los límites a los cuáles a través de un análisis 
+futuro aún más exhaustivo podremos considerarlos o no como outliers. Los precios que podrían ser 
+potencialmente outliers entonces están entre los menores a 75000 y los mayores a 1129575.
+
+El boxplot de Bedrooms nos muestra que el 50% de las casas tienen de 3 a 4 habitaciones aunque la mayor cantidad de casas tienen entre 1.5 y 5.5. También se pueden observar una cantidad pequeña de valores fuera de los límites los cuáles podrían ser potencialmente outliers. Cabe destacar que hay una casa que cuenta con 33 habitaciones. Este dato está muy alejado de los demás por lo que nos resulta sospechoso.
+```{r}
+par(mfrow=c(1,2))
+boxplot(raw_data_house$price/1000,main="Price [1 = U$D 1000]")
+boxplot(raw_data_house$bedrooms,main="bedrooms")
+```
+### Bathrooms
+El boxplot de Bathrooms nos dice que el 50% de las casas tienen una cantidad de baños que van de 1.75 a 2.5 aunque la mayor cantidad de los datos se encuentran entre 0.6 y 3.5. También se pueden observar una cantidad pequeña de valores fuera de los límites los cuáles podrían ser potencialmente outliers.
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(raw_data_house$bathrooms,main="bathrooms")
+```
+### Sqft_lot y Sqft_lot15
+El boxplot de Sqft_lot nos dice que el 50% de los datos van de 5040 a 10688 aunque la mayor cantidad de los datos se encuentran entre 520 y 19160. También se pueden observar una cantidad considerable de valores fuera de los límites los cuáles podrían ser potencialmente outliers.
+El boxplot de Sqft_lot15 nos dice que el 50% de los datos van de 5100 a 10083 aunque la mayor cantidad de los datos se encuentran entre 651 y 17557. También se pueden observar una cantidad considerable de valores fuera de los límites los cuáles podrían ser potencialmente outliers.
+Entre ambos vemos una similitud en cuanto a las dimensiones que se manejan.
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(raw_data_house$sqft_lot/1000,main="sqft lot [1 = 1000 sqft]")
+boxplot(raw_data_house$sqft_lot15/1000,main="sqft lot15 [1 = 1000 sqft]")
+```
+### Floors y Sqft_above
+El boxplot de Floors nos dice que el 50% de las casas tienen de 1 a 2 pisos, aunque en la mayor cantidad de las casas se encuentran entre 1 y 3.5 pisos. No se observan valores fuera de los límites los cuáles podrían ser potencialmente outliers.
+El boxplot de sqft_above nos dice que el 50% de los datos van de 1190 a 2210 sqft aunque la mayor cantidad de los datos se encuentran entre 290 y 3740. Se observa una cantidad considerable de valores fuera de los límites los cuáles podrían ser potencialmente outliers.
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(raw_data_house$floors,main="Floors")
+boxplot(raw_data_house$sqft_above,main="sqft above")
+```
+### Sqft_living y Sqft_living15
+
+El boxplot de sqft_living nos dice que el 50% de los datos van de 1427 a 2550 aunque la mayor cantidad de los datos se encuentran entre 290 y 4234. Se observan una cantidad considerable de valores fuera de estos límites los cuáles podrían ser potencialmente outliers.
+El boxplot de sqft_living15 nos dice que el 50% de los datos van de 1490 a 2360 aunque la mayor cantidad de los datos se encuentran entre 185 y 3665. Se observan una cantidad considerable de valores fuera de estos límites los cuáles podrían ser potencialmente outliers. Se observa una similitud en los datos.
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(raw_data_house$sqft_living,main="sqft living")
+
+boxplot(raw_data_house$sqft_living15,main="sqft living 15")
+```
+## Pieplots
+### Renovated y Has_basement
+El pie plots de renovated nos dice que casi el 96% de las casas no fueron renovadas. Es decir, solo una pequeña cantidad de las casas en estudio fueron renovadas. El pie plots de has_basement nos dice que casi el 61% de las casas no tienen sótanos.
+
+```{r}
+workclass_1 <- table(raw_data_house$renovated)
+lb = paste0(round(prop.table(workclass_1)*100,2),"%")
+pie(workclass_1,labels = lb, col = rainbow(2),main="Distribución de renovated")
+legend(-2.1,0.4,legend=names(workclass_1),cex=0.7,yjust=0.2, xjust = -0.1,
+       fill = rainbow(2), bty = "n")
+
+workclass_2 <- table(raw_data_house$has_basement)
+
+
+lb = paste0(round(prop.table(workclass_2)*100,2),"%")
+pie(workclass_2,labels = lb, col = rainbow(2),main="Distribución de has_basement")
+legend(-2.1,0.4,legend=names(workclass_2),cex=0.7,yjust=0.2, xjust = -0.1,
+       fill = rainbow(2), bty = "n")
+```
+### Grade y Condition
+El pie plots de grade nos dice que un poco más del 70% de las casas tienen una calificación buena/regular. El pie plots de condition nos dice que un poco más del 80% de las casas tienen una calificación buena/regular. Con estos números podemos decir que, en general, el dataset contiene casas que no están en mal estado.
+
+```{r}
+workclass_3<- table(raw_data_house$grade)
+
+lb = paste0(round(prop.table(workclass_3)*100,2),"%")
+pie(workclass_3,labels = lb, col = rainbow(13),main="Distribución de grade")
+legend(-2.1,0.4,legend=names(workclass_3),cex=0.7,yjust=0.9, xjust = -0.1,
+       fill = rainbow(13), bty = "n")
+
+workclass_4<- table(raw_data_house$condition)
+
+lb = paste0(round(prop.table(workclass_4)*100,2),"%")
+pie(workclass_4,labels = lb, col = rainbow(5),main="Distribución de Condition")
+legend(-2.1,0.4,legend=names(workclass_4),cex=0.7,yjust=0.9, xjust = -0.1,
+       fill = rainbow(5), bty = "n")
+```
+### View y Waterfront
+El pie plots de view nos dice que un poco más del 90% de las casas no fueron vistas. El pie plots de waterfront nos dice que solo alrededor del 1% de las casas tienen vista al lago.
+
+```{r}
+workclass_5<- table(raw_data_house$view)
+
+lb = paste0(round(prop.table(workclass_5)*100,2),"%")
+pie(workclass_5,labels = lb, col = rainbow(13),main="Distribución de View")
+legend(-2.1,0.4,legend=names(workclass_5),cex=0.7,yjust=0.9, xjust = -0.1,
+       fill = rainbow(13), bty = "n")
+
+workclass_6<- table(raw_data_house$waterfront)
+
+lb = paste0(round(prop.table(workclass_6)*100,2),"%")
+pie(workclass_6,labels = lb, col = rainbow(13),main="Distribución de waterfront")
+legend(-2.1,0.4,legend=names(workclass_6),cex=0.7,yjust=0.9, xjust = -0.1,
+       fill = rainbow(13), bty = "n")
+```
+## Histogramas
+Un histograma es la representación gráfica en forma de barras, que simboliza la distribución de un conjunto de datos. Sirven para obtener una "primera vista" general, o panorama, de la distribución de la población, o de la muestra, respecto a una característica, cuantitativa y continua.
+
+### Price
+El histograma de Price nos muestra que, si bien la mayor cantidad de las casas cuestan hasta 2000000 de dólares, se cuenta con una alta dispersión en los precios que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Price.
+
+```{r}
+hist(raw_data_house$price/1000,main="Histograma de Price",xlab="Price [1 = U$D 1000]",freq=F,col="gray",breaks=10)
+
+x<-as.factor(raw_data_house$price/1000)
+
+lines(density(raw_data_house$price/1000),col="red",lwd=2)
+curve(dnorm(x,mean=mean(raw_data_house$price/1000),sd=sd(raw_data_house$price/1000)),
+      add=TRUE,
+      col = "blue")
+```
+### Sqft_living
+El histograma de Sqft_living nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta un poco más de 5000 sqft de living, se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_living.
+
+```{r}
+hist(raw_data_house$sqft_living,main="Histograma de sqft_living",xlab="sqft_living",freq=F,col="gray",breaks=10)
+
+x<-as.factor(raw_data_house$sqft_living)
+
+lines(density(raw_data_house$sqft_living),col="red",lwd=2)
+curve(dnorm(x,mean=mean(raw_data_house$sqft_living),sd=sd(raw_data_house$sqft_living)),
+      add=TRUE,
+      col = "blue")
+```
+### Sqft_lot
+El histograma de Sqft_lot nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta un poco más de 250 sqft de lote, se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_lote.
+
+```{r}
+hist(raw_data_house$sqft_lot/1000,main="Histograma de sqft_lot",xlab="sqft_lot [1 = 1000 sqft]",freq=F,col="gray",breaks=10)
+
+x<-as.factor(raw_data_house$sqft_lot/1000)
+
+lines(density(raw_data_house$sqft_lot/1000),col="red",lwd=2)
+curve(dnorm(x,mean=mean(raw_data_house$sqft_lot/1000),sd=sd(raw_data_house$sqft_lot/1000)),
+      add=TRUE,
+      col = "blue")
+```
+
+### Sqft_living15
+
+El histograma de Sqft_living15 nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta un poco más de 4000 sqft de living, se cuenta con una dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_living15.
+
+```{r}
+hist(raw_data_house$sqft_living15,main="Histograma de sqft_living15",xlab="sqft_living15",freq=F,col="gray",breaks=10)
+
+x<-as.factor(raw_data_house$sqft_living15)
+
+lines(density(raw_data_house$sqft_living15),col="red",lwd=2)
+curve(dnorm(x,mean=mean(raw_data_house$sqft_living15),sd=sd(raw_data_house$sqft_living15)),
+      add=TRUE,
+      col = "blue")
+```
+### Sqft_lot15
+
+El histograma de Sqft_lot15 nos muestra que, si bien la mayor cantidad de las casas cuentan con hasta un poco más de 250 sqft de lote, se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_lote15.
+
+```{r}
+hist(raw_data_house$sqft_lot15/1000,main="Histograma de sqft_lot15",xlab="sqft_lot15 [1 = 1000 sqft]",freq=F,col="gray",breaks=10)
+
+x<-as.factor(raw_data_house$sqft_lot15/1000)
+
+lines(density(raw_data_house$sqft_lot15/1000),col="red",lwd=2)
+curve(dnorm(x,mean=mean(raw_data_house$sqft_lot15/1000),sd=sd(raw_data_house$sqft_lot15/1000)),
+      add=TRUE,
+      col = "blue")
+```
+## Distribuciones respecto a la variable objetivo
+### Price vs Bathrooms
+La distribución de Price con bathrooms nos muestra que a mayor cantidad de baños las casas pueden tener un incremento en su precio. Esto se mantiene en casas que van de 1500000 con hasta 6 baños. Puede observarse que en casas con valores mayores no sigue este orden.
+
+```{r}
+boxplot(raw_data_house$price/1000 ~ raw_data_house$bathrooms , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="bathrooms",main="Distribución Price vs Bathrooms")
+```
+### Price vs Bedrooms
+
+La distribución de Price con bedrooms nos muestra que a mayor cantidad de habitaciones las casas pueden tener un incremento en su precio. Esto se mantiene en casas que van de 1500000 con hasta 6 habitaciones.
+
+```{r}
+boxplot(raw_data_house$price/1000 ~ raw_data_house$bedrooms , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="bedrooms",main="Distribución Price vs Bedrooms")
+```
+### Price vs Sqft_living
+La distribución de Price con sqft_living nos muestra que a mayor cantidad de sqft de living las casas pueden tener un leve incremento en su precio. Esto se mantiene en casas que van hasta 5000 sqft.
+```{r}
+ggplot(data=raw_data_house,aes(x=sqft_living,y=price/1000))+
+  geom_point(colour=c("firebrick3"))+
+  stat_smooth(method="lm",formula=y~poly(x,3),color="blue")+
+theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_living")+
+  theme(plot.title=element_text(hjust=0.5,face="bold"))
+
+```
+### Price vs Sqft_living15
+La distribución de Price con sqft_living15 nos muestra que a mayor cantidad de sqft de living las casas pueden tener un muy leve incremento en su precio o mantenerse. A partir de 3000 sqft el incremento en el precio es mayor.
+
+```{r}
+ggplot(data=raw_data_house,aes(x=sqft_living15,y=price/1000))+
+  geom_point(colour=c("firebrick3"))+
+  stat_smooth(method="lm",formula=y~poly(x,3),color="blue")+
+theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_living15")+
+  theme(plot.title=element_text(hjust=0.5,face="bold"))
+```
+### Price vs Sqft_lot
+La distribución de Price con sqft_lot y sqft_lot15 nos muestra lo contrario a las variables anteriores. Podemos ver como a valores chicos el precio puede llegar a ser alto y viceversa. A futuro podría no considerarse esta variable ya que sus los valores son sospechosos.
+
+```{r}
+ggplot(data=raw_data_house,aes(x=sqft_lot,y=price/1000))+
+  geom_point(colour=c("firebrick3"))+
+  stat_smooth(method="lm",formula=y~poly(x,3),color="blue")+
+theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_lot")+
+  theme(plot.title=element_text(hjust=0.5,face="bold"))
+```
+### Price vs Sqft_lot15
+La distribución de Price con sqft_lot y sqft_lot15 nos muestra lo contrario a las variables anteriores. Podemos ver como a valores chicos el precio puede llegar a ser alto y viceversa. A futuro podría no considerarse esta variable ya que sus los valores son sospechosos.
+```{r}
+ggplot(data=raw_data_house,aes(x=sqft_lot15,y=price/1000))+
+  geom_point(colour=c("firebrick3"))+
+  stat_smooth(method="lm",formula=y~poly(x,3),color="blue")+
+theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_lot15")+
+  theme(plot.title=element_text(hjust=0.5,face="bold"))
+```
+### Price vs Grade
+La distribución de Price con grade nos muestra que a una mayor calificación las casas tienen un mayor precio. Notamos entonces que grade tiene un comportamiento ascendente en este caso.
+
+```{r}
+boxplot(raw_data_house$price/1000 ~ raw_data_house$grade , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="grade",main="Distribución Price vs Grade")
+```
+### Price vs View
+La distribución de Price con view nos muestra que no sigue ningún comportamiento respecto a price. Esto nos indica que view no es de importancia para el análisis.
+
+```{r}
+boxplot(raw_data_house$price/1000 ~ raw_data_house$view , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="view",main="Distribución Price vs View")
+```
+### Price vs Waterfront
+La distribución de Price con waterfront nos muestra que no sigue ningún comportamiento respecto a price. Sin embargo, se puede notar que al tener una vista al lago, las casas en este caso, comienzan con un precio superior al de las casas que no poseen.
+
+```{r}
+boxplot(raw_data_house$price/1000 ~ raw_data_house$waterfront , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="waterfront",main="Distribución Price vs Waterfront")
+```
+### Price vs Renovated
+La distribución de Price con renovated nos muestra que no sigue ningún comportamiento respecto a price. Esto nos indica que renovated no es de importancia para el análisis.
+
+```{r}
+boxplot(raw_data_house$price/1000 ~ raw_data_house$renovated , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D 1000]" , 
+    xlab="renovated",main="Distribución Price vs renovated")
+```
+### Price vs Has_basement
+
+La distribución de Price con has_basement nos muestra que no sigue ningún comportamiento respecto a price. Sin embargo, se puede notar que las casas que si tienen sótano pueden llegar a costar aún más que las que no tienen.
+
+```{r}
+boxplot(raw_data_house$price/1000 ~ raw_data_house$has_basement , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="has_basement",main="Distribución Price vs has_basement")
+```
+
+### Price vs Sqft_above
+La distribución de Price con sqft_above nos muestra que a mayor cantidad de sqft_above las casas pueden tener un leve incremento en su precio. Esto se mantiene en casas que van hasta 5000 sqft.
+
+```{r}
+ggplot(data=raw_data_house,aes(x=sqft_above,y=price/1000))+
+  geom_point(colour=c("firebrick3"))+
+  stat_smooth(method="lm",formula=y~poly(x,3),color="blue")+
+theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_above")+
+  theme(plot.title=element_text(hjust=0.5,face="bold"))
+```
+## Interpretación
+Según el análisis realizado podemos decir que la mayoría de las casas cuestan entre 75000 y 1129575 dólares. Hay casas con valores que están alejados a estos números los cuáles a través de un análisis futuro aún más exhaustivo podremos considerarlos o no como outliers. Redondeando, vemos que la mayor cantidad de las casas cuestan hasta 2000000 de dólares, sin embargo, se cuenta con una alta dispersión en los precios que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Price. En cuanto a las habitaciones la mayor cantidad de las casas tienen entre 1.5 y 5.5. Se observó que a mayor cantidad de habitaciones las casas tienen un incremento en su precio. Esto se mantiene en casas que van de u$1500000 con hasta 6 habitaciones. Con respecto a los baños, la mayoría de las casas tienen entre 0.6 y 3.5. También sucede que a mayor cantidad de baños las casas tienen un incremento en su precio. Esto se mantiene en casas que van de 1500000 con hasta 6 baños. Puede observarse que en casas valores mayores no sigue este orden. Si hablamos de sótanos, casi el 61% de las casas no tienen sótanos. Se puede notar que las casas que si tienen sótano pueden llegar a costar aún más que las que no tienen. Al hablar de dimensiones, se tienen casas mayormente de 520 a 19160 sqft tanto en sqft_lot y sqft_lot15. Sin embargo, se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_lote. Respecto al precio y sus dimensiones (sqft_lot y sqft_lot15) nos muestra lo contrario a las variables anteriores. Podemos ver como a valores chicos el precio puede llegar a ser alto y viceversa. A futuro podría no considerarse esta variable ya que sus los valores son sospechosos. Respecto a las dimensiones sin contar las del sótano, se encuentran casas con entre 290 y 3740 sqft mayormente. Se observa que a mayor cantidad de sqft las casas pueden tener un leve incremento en su precio. Esto se mantiene en casas que van hasta 5000 sqft. Se tiene entre 290 y 4234 sqft de living principalmente. Si bien la mayor cantidad de las casas cuentan con hasta 5000 sqft de living, se cuenta con una alta dispersión en las medidas que sospechosamente tiene una tendencia hacia la derecha. Esto nos hace pensar que algunos valores podrían interferir en el análisis por lo que a futuro se tendrá en cuenta achicar los valores de interés respecto a Sqft_living. A mayor cantidad de sqft de living las casas pueden tener un leve incremento en su precio. Esto se mantiene en casas que van hasta 5000 sqft. Lo mismo sucede con Sqft_living15. La diferencia está en que sqft_living15 nos muestra que a mayor cantidad de sqft de living las casas pueden tener un muy leve incremento en su precio o mantenerse pero que a partir de 3000 sqft el incremento en el precio es mayor. Si hablamos de renovación, casi el 96% de las casas no pasaron por ello. Las casas en su mayoría (un poco más del 70%) tienen una calificación buena/regular y se observó que a una mayor calificación las casas tienen un mayor precio. Notamos que grade tiene un comportamiento ascendente en este caso. Si nos remitimos a las condiciones de las mismas hay una similitud ya que un poco más del 80% de las casas tienen una calificación buena/regular. Alrededor del 99% de las casas no tienen una vista al lago.Sin embargo, se puede notar que al tener una vista al lago, las casas en este caso, comienzan con un precio superior al de las casas que no poseen. Un poco más del 90% de las casas no fueron vistas.
+
+##############
+# **Dataset con Factores**
+##############
+
+## Creacion
+
+Creamos el dataset de los factores para tener una idea general de los valores del mismo.
+
+```{r}
+#Convertir en factores
+deleteme <- raw_data_house
+deleteme$price<-as.factor(raw_data_house$price)
+deleteme$bedrooms<-as.factor(raw_data_house$bedrooms)
+deleteme$bathrooms<-as.factor(raw_data_house$bathrooms)
+deleteme$sqft_living<-as.factor(raw_data_house$sqft_living)
+deleteme$sqft_lot<-as.factor(raw_data_house$sqft_lot)
+deleteme$floors<-as.factor(raw_data_house$floors)
+deleteme$waterfront<-as.factor(raw_data_house$waterfront)
+deleteme$view<-as.factor(raw_data_house$view)
+deleteme$condition<-as.factor(raw_data_house$condition)
+deleteme$grade<-as.factor(raw_data_house$grade)
+deleteme$sqft_above<-as.factor(raw_data_house$sqft_above)
+deleteme$has_basement<-as.factor(raw_data_house$has_basement)
+deleteme$renovated<-as.factor(raw_data_house$renovated)
+deleteme$yr_built<-as.factor(raw_data_house$yr_built)
+deleteme$zipcode<-as.factor(raw_data_house$zipcode)
+deleteme$lat<-as.factor(raw_data_house$lat)
+deleteme$long<-as.factor(raw_data_house$long)
+deleteme$sqft_living15<-as.factor(raw_data_house$sqft_living15)
+deleteme$sqft_lot15<-as.factor(raw_data_house$sqft_lot15)
+```
+
+## Estructura
+
+```{r}
+estructura_factores <- str(deleteme)
+estructura_factores
+```
+## Sumario
+
+```{r}
+sumario_factores <- summary(deleteme)
+sumario_factores
+```
+## Eliminar
+
+Eliminamos el dataset de factores porqué era para tener conocimiento de las variables únicamente.
+
+```{r}
+rm(deleteme)
+```
+#######################
+# **Matriz de Correlación**
+#######################
+
+La correlación es una medida estadística que expresa hasta qué punto dos variables están relacionadas linealmente. Es una herramienta común para describir relaciones simples sin hacer afirmaciones sobre causa y efecto. La matriz de correlación muestra los valores de correlación de Pearson, que miden el grado de relación lineal entre cada par de elementos o variables. A menudo, las variables con valores de correlación mayores que 0.7 se consideran altamente correlacionadas.
+
+## Matriz de correlación con variable objetivo
+
+```{r}
+raw_data_with_price <- raw_data_house
+raw_data_with_price$date = NULL
+data_correlation_with_price<- cor(raw_data_with_price)
+data_correlation_with_price
+
+corrplot(data_correlation_with_price,method="square")
+```
+## Matriz de correlación sin variable objetivo
+
+```{r}
+raw_data_without_price <- raw_data_house
+raw_data_without_price$date = NULL
+raw_data_without_price$price = NULL
+data_correlation_without_price<- cor(raw_data_without_price)
+data_correlation_without_price
+
+corrplot(data_correlation_without_price,method="square")
+```
+################
+# **Limpieza**
+################
+
+Como se pudo observar en el análisis exploratorio de datos, el dataset cuenta con observaciónes con muchos valores atípicos, entonces se resuelve realizar la siguiente limpieza: En la fila 15871 donde una casa tenía 33 habitaciones se considera un error de imputación y se ingresa un 3. No se considera casas cuyo precio sea mayor a U$D 850.000. No se considera casas que no tengan habitaciones o mas de 5. No se considera casas que no tengan baños o que tengan más de 4. Las dimensiones de las casas registradas en 2014 no debe ser mayor a 3200 pies cuadrados. Las dimensiones de las casas registradas en 2015 deben estar entre los 600 y 2850 pies cuadrados. El tamaño del lote de las casas de 2014 no debe ser mayor a los 12000 pies cuadrados. El tamaño del lote de las casas de 2015 no debe ser mayor a los 14000 pies cuadrados. Las dimensiones de las casas sin considerar el sótano no debe ser mayor a los 2700 pies cuadrados.
+
+```{r}
+dataset <- raw_data_house
+dataset[15871,]$bedrooms=3
+dataset <- filter(dataset,!(price>850000))
+dataset <- filter(dataset,!(sqft_living>3200))
+dataset <- filter(dataset,!(sqft_living15<600))
+dataset <- filter(dataset,!(sqft_living15>2850))
+dataset <- filter(dataset,!(sqft_lot>12000))
+dataset <- filter(dataset,!(sqft_lot15>13000))
+dataset <- filter(dataset,!(sqft_above>2700))
+dataset <- filter(dataset,!(bedrooms<2))
+dataset <- filter(dataset,!(bedrooms>5))
+dataset <- filter(dataset,!(bathrooms<0.51))
+dataset <- filter(dataset,!(bathrooms>3.74))
+```
+##############
+# **Dataset Limpio**
+##############
+
+Con la limpieza de 21613 observaciónes, nos quedamos con 13865. Lo que significa una perdida del 35% de los datos.
+
+```{r}
+dimensiones_clean <- dim(dataset)
+dimensiones_clean
+```
+## Muestra
+```{r}
+head(dataset,5)
+```
+## Sumario
+```{r}
+sumario_clean <- summary(dataset)
+sumario_clean
+```
+############################
+# **Análisis Exploratorio de Datos(Dataset Limpio)**
+###########################
+## Boxplots
+
+### Price y Bedrooms
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(dataset$price/1000,main="Price [1 = U$D 1000]")
+boxplot(dataset$bedrooms,main="bedrooms")
+```
+### Bathrooms
+
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(dataset$bathrooms,main="bathrooms")
+```
+### Sqft_lot y Sqft_lot15
+
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(dataset$sqft_lot/1000,main="sqft lot [1 = 1000 sqft]")
+boxplot(dataset$sqft_lot15/1000,main="sqft lot15 [1 = 1000 sqft]")
+```
+### Floors y Sqft_above
+
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(dataset$floors,main="Floors")
+boxplot(dataset$sqft_above,main="sqft above")
+```
+### Sqft_living y Sqft_living15
+
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(dataset$sqft_living,main="sqft living")
+
+boxplot(dataset$sqft_living15,main="sqft living 15")
+```
+
+## Pieplots
+
+### Renovated y Has_basement
+
+```{r}
+workclass_7 <- table(dataset$renovated)
+lb = paste0(round(prop.table(workclass_7)*100,2),"%")
+pie(workclass_7,labels = lb, col = rainbow(2),main="Distribución de renovated")
+legend(-2.1,0.4,legend=names(workclass_7),cex=0.7,yjust=0.2, xjust = -0.1,
+       fill = rainbow(2), bty = "n")
+
+workclass_8 <- table(dataset$has_basement)
+
+
+lb = paste0(round(prop.table(workclass_8)*100,2),"%")
+pie(workclass_8,labels = lb, col = rainbow(2),main="Distribución de has_basement")
+legend(-2.1,0.4,legend=names(workclass_8),cex=0.7,yjust=0.2, xjust = -0.1,
+       fill = rainbow(2), bty = "n")
+```
+
+### Grade y Condition
+
+```{r}
+workclass_9<- table(dataset$grade)
+
+lb = paste0(round(prop.table(workclass_9)*100,2),"%")
+pie(workclass_9,labels = lb, col = rainbow(13),main="Distribución de grade")
+legend(-2.1,0.4,legend=names(workclass_9),cex=0.7,yjust=0.9, xjust = -0.1,
+       fill = rainbow(13), bty = "n")
+
+workclass_10<- table(dataset$condition)
+
+lb = paste0(round(prop.table(workclass_10)*100,2),"%")
+pie(workclass_10,labels = lb, col = rainbow(5),main="Distribución de Condition")
+legend(-2.1,0.4,legend=names(workclass_10),cex=0.7,yjust=0.9, xjust = -0.1,
+       fill = rainbow(5), bty = "n")
+```
+
+### View y Waterfront
+
+```{r}
+workclass_11<- table(dataset$view)
+
+lb = paste0(round(prop.table(workclass_11)*100,2),"%")
+pie(workclass_11,labels = lb, col = rainbow(13),main="Distribución de View")
+legend(-2.1,0.4,legend=names(workclass_11),cex=0.7,yjust=0.9, xjust = -0.1,
+       fill = rainbow(13), bty = "n")
+
+workclass_12<- table(dataset$waterfront)
+
+lb = paste0(round(prop.table(workclass_12)*100,2),"%")
+pie(workclass_12,labels = lb, col = rainbow(13),main="Distribución de waterfront")
+legend(-2.1,0.4,legend=names(workclass_12),cex=0.7,yjust=0.9, xjust = -0.1,
+       fill = rainbow(13), bty = "n")
+```
+
+## Histogramas
+
+### Price
+
+```{r}
+hist(dataset$price/1000,main="Histograma de Price",xlab="Price [1 = U$D 1000]",freq=F,col="gray",breaks=10)
+
+x<-as.factor(dataset$price/1000)
+
+lines(density(dataset$price/1000),col="red",lwd=2)
+curve(dnorm(x,mean=mean(dataset$price/1000),sd=sd(dataset$price/1000)),
+      add=TRUE,
+      col = "blue")
+```
+### Sqft_living
+
+```{r}
+hist(dataset$sqft_living,main="Histograma de sqft_living",xlab="sqft_living",freq=F,col="gray",breaks=10)
+
+x<-as.factor(dataset$sqft_living)
+
+lines(density(dataset$sqft_living),col="red",lwd=2)
+curve(dnorm(x,mean=mean(dataset$sqft_living),sd=sd(dataset$sqft_living)),
+      add=TRUE,
+      col = "blue")
+```
+### Sqft_lot
+
+```{r}
+hist(dataset$sqft_lot/1000,main="Histograma de sqft_lot",xlab="sqft_lot [1 = 1000 sqft]",freq=F,col="gray",breaks=10)
+
+x<-as.factor(dataset$sqft_lot/1000)
+
+lines(density(dataset$sqft_lot/1000),col="red",lwd=2)
+curve(dnorm(x,mean=mean(dataset$sqft_lot/1000),sd=sd(dataset$sqft_lot/1000)),
+      add=TRUE,
+      col = "blue")
+```
+### Sqft_living15
+```{r}
+hist(dataset$sqft_living15,main="Histograma de sqft_living15",xlab="sqft_living15",freq=F,col="gray",breaks=10)
+
+x<-as.factor(dataset$sqft_living15)
+
+lines(density(dataset$sqft_living15),col="red",lwd=2)
+curve(dnorm(x,mean=mean(dataset$sqft_living15),sd=sd(dataset$sqft_living15)),
+      add=TRUE,
+      col = "blue")
+```
+
+### Sqft_lot15
+
+```{r}
+hist(dataset$sqft_lot15/1000,main="Histograma de sqft_lot15",xlab="sqft_lot15 [1 = 1000 sqft]",freq=F,col="gray",breaks=10)
+
+x<-as.factor(dataset$sqft_lot15/1000)
+
+lines(density(dataset$sqft_lot15/1000),col="red",lwd=2)
+curve(dnorm(x,mean=mean(dataset$sqft_lot15/1000),sd=sd(dataset$sqft_lot15/1000)),
+      add=TRUE,
+      col = "blue")
+```
+## Distribuciones respecto a la variable objetivo
+
+### Price vs Bathrooms
+
+```{r}
+boxplot(dataset$price/1000 ~ dataset$bathrooms , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="bathrooms",main="Distribución Price vs Bathrooms")
+```
+### Price vs Bedrooms
+
+```{r}
+boxplot(dataset$price/1000 ~ dataset$bedrooms , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="bedrooms",main="Distribución Price vs Bedrooms")
+```
+### Price vs Sqft_living
+
+```{r}
+ggplot(data=dataset,aes(x=sqft_living,y=price/1000))+
+  geom_point(colour=c("firebrick3"))+
+  stat_smooth(method="lm",formula=y~poly(x,3),color="blue")+
+theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_living")+
+  theme(plot.title=element_text(hjust=0.5,face="bold"))
+```
+### Price vs Sqft_living15
+
+```{r}
+ggplot(data=dataset,aes(x=sqft_living15,y=price/1000))+
+  geom_point(colour=c("firebrick3"))+
+  stat_smooth(method="lm",formula=y~poly(x,3),color="blue")+
+theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_living15")+
+  theme(plot.title=element_text(hjust=0.5,face="bold"))
+```
+### Price vs Sqft_lot
+
+```{r}
+ggplot(data=dataset,aes(x=sqft_lot,y=price/1000))+
+  geom_point(colour=c("firebrick3"))+
+  stat_smooth(method="lm",formula=y~poly(x,3),color="blue")+
+theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_lot")+
+  theme(plot.title=element_text(hjust=0.5,face="bold"))
+```
+
+### Price vs Sqft_lot15
+
+```{r}
+ggplot(data=dataset,aes(x=sqft_lot15,y=price/1000))+
+  geom_point(colour=c("firebrick3"))+
+  stat_smooth(method="lm",formula=y~poly(x,3),color="blue")+
+theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_lot15")+
+  theme(plot.title=element_text(hjust=0.5,face="bold"))
+```
+### Price vs Grade
+```{r}
+boxplot(dataset$price/1000 ~dataset$grade , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="grade",main="Distribución Price vs Grade")
+```
+### Price vs View
+
+```{r}
+boxplot(dataset$price/1000 ~ dataset$view , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="view",main="Distribución Price vs View")
+```
+### Price vs Waterfront
+
+```{r}
+boxplot(dataset$price/1000 ~ dataset$waterfront , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="waterfront",main="Distribución Price vs Waterfront")
+```
+### Price vs Renovated
+
+```{r}
+boxplot(dataset$price/1000 ~ dataset$renovated , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D 1000]" , 
+    xlab="renovated",main="Distribución Price vs renovated")
+```
+### Price vs Has_basement
+```{r}
+boxplot(dataset$price/1000 ~ dataset$has_basement , col=rgb(0.3,0.5,0.4,0.6) , ylab="price [1 = U$D1000]" , 
+    xlab="has_basement",main="Distribución Price vs has_basement")
+```
+### Price vs Sqft_above
+
+```{r}
+ggplot(data=dataset,aes(x=sqft_above,y=price/1000))+
+  geom_point(colour=c("firebrick3"))+
+  stat_smooth(method="lm",formula=y~poly(x,3),color="blue")+
+theme_bw()+labs(title="Distribución Price [1 = U$D 1000] vs sqft_above")+
+  theme(plot.title=element_text(hjust=0.5,face="bold"))
+```
+## Interpretación
+Se puede observar que en el boxplot de Price ya no se observan valores fuera de los límites. La mediana situada en el centro nos da indicio de que su distribución es un tanto simétrica. El 50% de los valores están entre 294000 y 529130 El histograma de Price nos muestra que la densidad y la distribución coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo estaban en el dataset crudo.
+
+En cuanto al boxplot de bedrooms, tampoco observamos valores atípicos. La mediana se encuentra en la parte inferior por lo que podemos decir que tiene una asimetría segada a la derecha. El 50% de los valores están entre 3 y 4. En la distribución Price con bedrooms hay un ligero aumento en el precio en casas que poseen más de 4 baños. Esto se da en casas de hasta 297000 dólares.
+
+El histograma de sqft_living nos muestra que la densidad y la distribución coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo estaban en el dataset crudo. En la distribución de Price con sqft_living se puede observar que a mayor sqft mayor es el precio. Podemos decir que hay una tendencia un tanto creciente.
+
+En la distribución de Price con sqft_living15 se puede observar una tendencia levemente creciente. El histograma de sqft_living15 nos muestra que la densidad y la distribución coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo estaban en el dataset crudo.
+
+En el boxplot, Living y living15 tampoco tienen valores fuera de los límites. Podemos decir que ambos tienen una distribución un tanto simétrica. El 50% de los valores en living van de 1300 a 2080 y en living 15 de 1390 a 1990.
+
+El histograma de sqft_lot nos muestra que la densidad y la distribución coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo estaban en el dataset crudo. El histograma de sqft_lot15 nos muestra que la densidad y la distribución coinciden un tanto. Se puede observar que hay una distribución tendiente a ser simétrica, los datos no están tan dispersos como lo estaban en el dataset crudo. En cuanto a sqft_lot y sqft_lot15, no se observan valores atípicos en los gráficos. El 50% de los datos del primero están entre 4400 y 8400 y el 50% de los datos del segundo están entre 4520 y 8293. Ambos tienen una distribución un tanto simétrica. En la distribución de Price con sqft_lot ni sqft_lot15 no se observa tendencia alguna.
+
+El pie plot de renovated nos indica que mas del 96% de las casas no fueron renovadas.
+
+El pie plot de has_basement nos dice que mas del 60% de las casas no tienen sótano.
+
+El pie plot de grade nos dice que mas del 80% de las casas están en condiciones buenas/regulares. En la distribución Price con grade se observa una tendencia creciente a partir del grado 8, lo que nos dice que a mayor grado mayor precio en ese caso. Aunque existen casas que teniendo un grade menor a 8, cuestan igual o más.
+
+El pie plot de condition nos dice que mas cerca del 90% de las casas están en buenas condiciones. En la distribución Price con condition se observa que las casas de condition 5 son ligeramente mas caras que las de menor condición. También nos dice las casas con condiciones 1 y 2 no llegan a ser muy costosas como las de demás condición.
+
+El pie plot de view nos dice que cerca del 95% de las casas no fueron vistas. En la distribución de Price con view hay un leve aumento en el precio de las casas que fueron vistas mas de dos veces.
+
+El pie plot de waterfront nos dice que casi el 100% de las casas no tiene una vista al lago. En la distribución de Price con waterfront se observa que la mayoría de las casas no poseen vista al lago pero que sin embargo las casas que si poseen una vista al lago son costosas.
+
+En el boxplot de above no se observan valores fuera de los límites. El 50% de los datos está entre 1100 y 1740. Tiene una distribución un tanto simétrica. En la distribución de Price con above se puede observar una tendencia levemente creciente. A partir de 1500 sqft se observa un mayor crecimiento en el precio.
+
+En el boxplot de bathrooms tampoco se observan valores atípicos. Tiene también una distribución un tanto simétrica. El 50% de los datos está entre 1.5 y 2.5 En la distribución Price con bathrooms podemos ver un leve aumento en el precio de las casas que poseen mayor cantidad de baños. Esto se da en casas menores a 590000 dólares.
+
+El boxplot de floors no cuenta con valores fuera de los límites. Tiene una distribución segada a la derecha se podría decir y el 50% de los datos se encuentran entre 1 y 2.
+
+En la distribución de Price con yr_build no se observa tendencia alguna.
+
+####################
+# Matriz de Correlación
+####################
+
+## Matriz de correlación con variable objetivo(Dataset Limpio)
+En la matriz de correlación incluyendo la variable objetivo(price), podemos
+observar que tiene una alta correlación con las siguientes variables:
+- bathrooms.
+- sqft_living.
+- grade.
+- sqft_above.
+- sqft_living15.
+Estas pueden considerarse para la futura selección de variables para continuar
+con el estudio.
+
+
+```{r}
+clean_data_with_price <- dataset
+clean_data_with_price$date = NULL
+data_correlation_with_price_clean<- cor(clean_data_with_price)
+data_correlation_with_price_clean
+
+corrplot(data_correlation_with_price,method="square")
+```
+
+## Matriz de correlación sin variable objetivo(Dataset Limpio)
+Luego, procedemos a elaborar otra matriz de correlación sin la variable objetivo.
+Para poder tomar conocimiento de como se relacionan las predictoras entre ellas.
+
+Las variables “predictoras” pueden
+perjudicar la confiabilidad del modelo, sobre todo si estan
+correlacionadas.
+- bathrooms: tiene alta correlación con sqft_living,grade,sqft_above y sqft_living15.
+- sqft_living: tiene alta correlación con bathrooms,grade,sqft_above y sqft_living15.
+- sqft_above: tiene alta correlación con bathrooms,grade,sqft_above y sqft_living15.
+- sqtf_living15: tiene alta correlación con bathrooms,grade,sqft_above y sqft_living.
+Al tener una alta correlación entre las variables predictoras podemos tener potenciales
+colinealidades. Entonces vamos a aplicar las técnicas de selección de variables
+mas confiables como Ridge y Lasso.
+
+```{r}
+clean_data_without_price <- dataset
+clean_data_without_price$date = NULL
+clean_data_without_price$price = NULL
+clean_data_correlation_without_price<- cor(clean_data_without_price)
+clean_data_correlation_without_price
+
+corrplot(clean_data_correlation_without_price,method="square")
+```
+##############################
+# **Selección de Modelos y Regularización**
+##############################
+## Best Subset Selection
+
+```{r}
+regsubset.full <- regsubsets(price ~ ., data = dataset)
+```
+### Sumario de regsubset
+Compara todos los posibles modelos usando un conjunto especifico de predictores. Muestra los modelos con mejores ajustes que contienen un predictor, dos predictores,…, n predictores. Al final contamos con un numero de modelos y sus respectivos resumenes estadisticos. La ventaja es que es conceptualmente claro. La desventaja es que es computacionalmente inviable, hay muchos modelos a ejecutar. Para el presente caso son 15 predictores lo que equivaldría a 2^15 = 32.768 modelos
+
+```{r}
+sumario.regsubset <- summary(regsubset.full)
+sumario.regsubset
+```
+La matriz de 8 filas es la cantidad de variables a evaluar con la variable objetivo. El número de fila es la cantidad de variables, la estrella en cada celda son las variables a tener en cuenta. Esto significa que si se quisiera hacer el análisis con una variable bastaría con grade. Con dos variables grade, yr_built y así sucesivamente.
+
+## Stepwise Selection
+El metodo selecciona un modelo agregando y eliminando predictores individuales, de una a la vez, basado en su significancia estadística.
+
+El estadístico Cp compara la precision y el sesgo del modelo completo con modelos que incluyan un subconjunto de predictores. Cp, AIC, BIC y R^2 ajustado son tecnicas que ajustan el error de entrenamiento para el tamaño del modelo y pueden ser usados para seleccionar entre un conjunto de modelos con diferentes numeros de variables.
+
+### Cp
+```{r}
+plot(sumario.regsubset$cp,xlab = "Numero de variable",ylab="CP",pch = 20, type="b")
+value.min <- which.min(sumario.regsubset$cp)
+
+points(value.min,sumario.regsubset$cp[value.min],col = "red",cex = 2,pch = 20)
+```
+#### Ploteo de CP
+
+```{r}
+plot(regsubset.full,scale="Cp")
+```
+### Coeficiente de Determinacion R^2
+
+```{r}
+plot(sumario.regsubset$rsq,xlab = "Numero de variable",ylab="R^2",pch = 20, type="b")
+value.max <- which.max(sumario.regsubset$rsq)
+
+points(value.min,sumario.regsubset$rsq[value.max],col = "red",cex = 2,pch = 20)
+```
+#### Ploteo de R^2
+
+```{r}
+plot(regsubset.full,scale="r2")
+```
+### Residual Sum Square (RSS)
+
+```{r}
+plot(sumario.regsubset$rss,xlab = "Numero de variable",ylab="RSS",pch = 20, type="b")
+value.min <- which.min(sumario.regsubset$rss)
+
+points(value.min,sumario.regsubset$rss[value.min],col = "red",cex = 2,pch = 20)
+```
+### Bayesian Information Criterion(BIC)
+
+```{r}
+plot(sumario.regsubset$bic,xlab = "Numero de variable",ylab="BIC",pch = 20, type="b")
+value.min <- which.min(sumario.regsubset$bic)
+
+points(value.min,sumario.regsubset$bic[value.min],col = "red",cex = 2,pch = 20)
+```
+#### Ploteo de BIC
+```{r}
+plot(regsubset.full,scale="bic")
+```
+### R^2 Ajustado
+```{r}
+plot(sumario.regsubset$adjr2,xlab = "Numero de variable",ylab="adjr2",pch = 20, type="b")
+value.max <- which.max(sumario.regsubset$adjr2)
+
+points(value.min,sumario.regsubset$adjr2[value.max],col = "red",cex = 2,pch = 20)
+```
+#### Ploteo de R^2 Ajustado
+```{r}
+plot(regsubset.full,scale="adjr2")
+```
+Según las técnicas empleadas, nos recomiendan seleccionar un total de 8 variables las cuales son: sqft_living, condition, grade, view, yr_built, sqft_living, sqft_lot15 y has_basement. Este estudio sumado al anterior, nos permiten evaluar aún mas las variables a elegir. Podemos ver que hay coincidencias entre las variables elegidas a partir del análisis exploratorio y este último estudio realizado. Procederemos a seguir analizando las variables con otros métodos.
+
+### Coeficientes
+
+```{r}
+coef(regsubset.full,8)
+```
+
+### Conjunto de validación
+
+Para el caso de estudio de House Price, se debera proceder a dividir las observaciones en dos: primero en entrenamiento (train, 70 %) y prueba (test, 30 %). Las proporciones pueden variar.
+
+```{r}
+index <- createDataPartition(dataset$price, p = 0.7, list = FALSE)
+data.train <- dataset[index, ]
+data.test <- dataset[-index, ]
+```
+
+Ejecutamos la instruccion regsubsets con los datos de entranamiento, a su vez, se busca que el numero máximo de parámetros sea 8 (nvmax) y el metodo forward. Posteriormente se muestra el sumario de los resultados.
+
+```{r}
+set.seed(10)
+model.fwd <- regsubsets(price ~., data = data.train, nvmax = 8, method = "forward")
+summary(model.fwd)
+```
+### Validación Cruzada
+
+```{r}
+set.seed(7)
+folds <- sample(rep(1:8, length = nrow(dataset)))
+folds
+table(folds)
+```
+## Métodos de Contracción
+
+### Ridge
+
+```{r}
+x.ridge <- model.matrix(price ~. , dataset)[,-1]
+y.ridge <- dataset$price
+```
+
+```{r}
+grid <- 10^seq(10,-2,length = 100)
+ridge.model <- glmnet(x.ridge, y.ridge, alpha = 0, lambda = grid)
+dim(coef(ridge.model))
+```
+#### Ploteo de Ridge
+
+```{r}
+plot_glmnet(ridge.model)
+```
+```{r}
+predict(ridge.model, s = 8, type = "coefficients")
+```
+#### Validación Cruzada
+
+```{r}
+set.seed(2)
+indices <- sample(c(TRUE,FALSE), nrow(dataset), replace = TRUE)
+y.test <- y.ridge[-indices]
+```
+
+```{r}
+ridge.model.cv <- cv.glmnet(x.ridge[indices,], y.ridge[indices], alpha = 0) # Por defecto, 10-fold
+coef(ridge.model.cv)
+```
+#### Ploteo del Modelo de Ridge
+
+```{r}
+plot(ridge.model.cv)
+```
+```{r}
+bestlam <- ridge.model.cv$lambda.min
+bestlam
+```
+
+```{r}
+ridge.pred <- predict(ridge.model, s = bestlam, newx = x.ridge[-indices,])
+```
+#### RMSE de Ridge
+
+```{r}
+rmse.ridge <- sqrt(mean((ridge.pred - y.test)^2))
+rmse.ridge
+```
+```{r}
+out <- glmnet(x.ridge, y.ridge, alpha = 0)
+predict(out, type = "coefficients", s = bestlam)
+```
+Podemos observar que Ridge nos selecciona principalmente sqft_lot15, sqftlivin15, zipcode, grade, sqft_lot, sqft_living, date.
+
+### Lasso
+
+```{r}
+x <- model.matrix(price ~ ., dataset)[,-1]
+y <- dataset$price
+```
+
+#### Ploteo de Lasso
+
+```{r}
+install.packages("glmnet")
+library("glmnet")
+lasso.model <- glmnet(x,y,alpha = 1)
+plot_glmnet(lasso.model)
+```
+
+#### Validación Cruzada
+
+```{r}
+indices <- sample(c(TRUE,FALSE),nrow(dataset),replace=TRUE)
+cv.out<- cv.glmnet(x[indices,],y[indices],alpha=1)
+coef(cv.out)
+```
+Como se observa en el listado de coeficientes algunos predictores están indicados con un punto(.), significa que su penalidad fue igual a 0 y no deben tenerse en cuenta para el modelo. Los que si deben tenerse en cuenta principalmente son: sqft_living, sqft_lot, grade, sqft_living15, y sqft_lot15 luego podemos seguir con bathrooms, zipcode y has_basement.
+
+#### Ploteo del Modelo de Lasso
+
+```{r}
+plot(cv.out)
+```
+```{r}
+bestlam <- cv.out$lambda.min
+bestlam
+```
+
+#### RMSE de Lasso
+
+```{r}
+lasso.pred <- predict(lasso.model,s=bestlam,newx=x[-indices,])
+value_2 <- mean((lasso.pred-y[-indices])^2)
+```
+
+```{r}
+rmse.lasso <- sqrt(value_2)
+rmse.lasso
+```
+Selección de variables:
+- **Según la matriz de correlación**:
+- bathrooms.
+- sqft_living.
+- grade.
+- sqft_above.
+- sqft_living15.
+- **Según Ridge**:
+- date
+- bedrooms
+- sqft_living
+- sqft_lot
+- grade
+- sqft_living15
+- sqft_lot15
+- **Best Subset Selection**:
+- price
+- sqft_living
+- view
+- condition
+- grade
+- yr_built
+- sqft_living15
+- sqft_lot15
+- has_basement
+-- **Según Lasso**:
+- price
+- bathrooms
+- sqft_living
+- sqft_lot
+- grade
+- sqft_living15
+- sqft_lot15
+- has_basement
+
+###################
+# **Regresión Líneal**
+##################
+
+La regresión lineal se usa para buscar relaciones significativa entre variables y predecir el valor de una variable dado el valor de otra. Los modelos con un predictor se denominan regresión simple. Los modelos con más de un predictor se conocen como regresión lineal múltiple.
+
+## Dataset Crudo
+
+```{r}
+dataset.selection.raw <- raw_data_house[c("price","bathrooms","sqft_living","yr_built"
+,"grade","waterfront","view","bedrooms")]
+```
+
+```{r}
+mlr_raw <- lm(formula=price ~ ., data = dataset.selection.raw)
+summary(mlr_raw)
+```
+Podemos ver en la parte superior de los resultados que hay una variación entre los valores máximos y mínimos y los cuartiles por lo que no hay una marcada simetría. En cuanto, a la significancia vemos que todos suman al modelo ya que t value es significativamente distinto de cero y todos tienen un código alto de significancia. El coeficiente de determinación R-Squared es bueno al igual que Adjusted R-Squared ya que tienen valores altos.
+
+### Índice de Confianza
+
+```{r}
+confint(mlr_raw)
+```
+### Validación del modelo
+```{r}
+stem(mlr_raw$residuals)
+```
+El histograma debe presentar caracterıstica de estar normalmente distribuido. Vemos que no la presenta. Hay que tener en cuenta que esto se realizó con el dataset crudo por lo que mas adelante haremos lo mismo pero con el dataset limpio. Decidimos agregar esta regresión ya que luego de probar con diferentes limpiezas, esta es la que mejor resultado nos arroja ya que el adjusted R-Squred es el mas alto que pudimos obtener y no queriamos descartarlo.
+
+### Predecidos vs Actuales
+
+```{r}
+plot(predict(mlr_raw),dataset.selection.raw$price/1000, ylab="Price[ 1 = U$D 1000]", 
+     main="Valores predecidos vs actuales",
+abline(a=0,b=1,col="blue",lwd=2))
+```
+### Residuales
+
+Podemos decir que en general es una buena gráfica, sin embargo, se pueden observar puntos alejados del resto los cuales pueden ser analizados y eliminados o modificados uno.
+
+```{r}
+plot(residuals(mlr_raw))
+abline(a=0,b=0,col="blue",lwd=2)
+text(residuals(mlr_raw))
+```
+### Ploteo del Modelo
+
+En la gráfica de residuos ́no hay ningun patrón. El promedio de la gráfica residual no se “pierde a cero”. Se observan valores alejados y dispersos que afectan a la gráfica.
+
+QQ-plot muestra si los residuos se distribuyen normalmente. Idealmente, las muestras deben estar en la lınea roja. Vemos que al comienzo y al final las muestras se "desprenden" de la línea roja por lo que si las muestras no estan en la lınea entonces se debe seguir trabjando en el modelo para que el residuo sea normal. Vemos que hay valores que están afectando mucho a la gráfica por lo que hay que prestarles atención.
+
+En Scale-Location Plot el grafico muestra cómo se distribuyen los residuos y podemos ver que existe una varianza entre ellos que al comienzo es menor y que después se acrecenta
+
+En Residuals vs Leverage Plot el plot ayuda a encontrar cuales son las observaciones influyentes. Aquı necesitamos verificar los puntos que estan fuera de la lınea discontinua. Un punto fuera de la lınea sera un punto influyente y su eliminación ́afectara los coeficientes de regresión. Se pueden observar varios puntos fuera de la línea.
+
+```{r}
+plot(mlr_raw)
+```
+
+### Histograma de Residuales
+
+```{r}
+hist(mlr_raw$residuals,main="Histograma de residuales",freq=F)
+lines(density(mlr_raw$residuals),col = "red",lwd=2)
+
+plot(mlr_raw$residuals ~ dataset.selection.raw$price)
+abline(a=0,b=0,col="blue",lwd=2)
+
+qqnorm(mlr_raw$residuals)
+
+qqline(mlr_raw$residuals,col="blue",lwd=2)
+```
+### Overfitting
+```{r}
+split_data_mlr <- createDataPartition(y =dataset.selection.raw$price,p=0.7,list=FALSE)
+
+train_data_mlr <- dataset.selection.raw[split_data_mlr,]
+test_data_mlr <- dataset.selection.raw[-split_data_mlr,]
+
+lmfit1_mlr <- train( price ~ sqft_living+bathrooms+yr_built+
+                   grade+waterfront+view+bedrooms, data = train_data_mlr,method="lm")
+
+summary(lmfit1_mlr)
+```
+#### RMSE
+
+El error cuadrático medio (RMSE) mide la cantidad de error que hay entre dos conjuntos de datos. En otras palabras, compara un valor predicho y un valor observado o conocido. Los valores más bajos de RMSE indican un mejor ajuste. RMSE es una buena medida de la precisión con que el modelo predice la respuesta, y es el criterio más importante para ajustar si el propósito principal del modelo es la predicción.
+
+```{r}
+predicted_test_mlr <- predict(lmfit1_mlr,test_data_mlr)
+model_test_1_mlr <- data.frame(obs = test_data_mlr$price,pred=predicted_test_mlr)
+defaultSummary(model_test_1_mlr)
+```
+
+#### Ploteo
+```{r}
+ggplot(varImp(lmfit1_mlr))
+```
+Vemos las variables con mas relevancia son grade, yr_built, sqft_living, waterfront, view y bedrooms.
+
+### Cross Validation
+```{r}
+control1_mlr <- trainControl(method="cv",number=10)
+lmfit2_mlr <- train(price ~. ,data = dataset.selection.raw,method="lm",trControl=control1_mlr,metric="Rsquared")
+summary(lmfit2_mlr)
+```
+#### RMSE
+
+```{r}
+predicted_test_2_mlr <- predict(lmfit2_mlr,dataset.selection.raw)
+model_test_2_mlr <- data.frame(obs = dataset.selection.raw$price,pred=predicted_test_2_mlr)
+defaultSummary(model_test_2_mlr)
+```
+#### Ploteo
+```{r}
+ggplot(varImp(lmfit2_mlr))
+```
+Vemos que en cuanto a la importancia se arrojan las mismas características que en el gráfico anterior.
+
+### Boostrap
+
+```{r}
+control3_mlr <- trainControl(method="boot",number=100)
+lmfit3_mlr <- train(price ~. ,data = dataset.selection.raw,method="lm",trControl=control1_mlr)
+summary(lmfit3_mlr)
+```
+
+#### RMSE
+```{r}
+predicted_test_3_mlr <- predict(lmfit3_mlr,dataset.selection.raw)
+model_test_3_mlr <- data.frame(obs = dataset.selection.raw$price,pred=predicted_test_3_mlr)
+defaultSummary(model_test_3_mlr)
+```
+
+#### Ploteo
+
+```{r}
+ggplot(varImp(lmfit3_mlr))
+```
+Vemos que en cuanto a la importancia se arrojan las mismas características que en los gráficos anteriores.
+
+En cuanto a los RMSE, los ultimos dos, Cross validation y Boostrap arrojan el valor mas alto (2.172422e+05) por lo que el primero indica un mejor ajuste (2.084357e+05).
+
+## Dataset Limpio
+```{r}
+dataset.selection.clean <- dataset[c("price","bedrooms","sqft_living","yr_built"
+,"grade","view","sqft_lot","sqft_living15")]
+```
+
+```{r}
+mlr_clean <- lm(formula=price ~ ., data = dataset.selection.clean)
+summary(mlr_clean)
+```
+Podemos ver en la parte superior de los resultados no existe el mismo grado de variación entre los valores máximos y mínimos y los cuartiles. El dataset limpio es mas simétrico que el crudo. En cuanto, a la significancia vemos que no hay variaciones significativas respecto al análisis anterior. El coeficiente de determinación R-Squared es bueno al igual que Adjusted R-Squared ya que tienen valores altos pero en este caso es menor en un 20% al que se obtuvo con el dataset anterior.
+
+### Índice de Confianza
+```{r}
+confint(mlr_clean)
+```
+
+### Validación del modelo
+
+```{r}
+stem(mlr_clean$residuals)
+```
+### Predecidos vs Actuales
+```{r}
+plot(predict(mlr_clean),dataset.selection.clean$price/1000, ylab="Price[ 1 = U$D 1000]", 
+     main="Valores predecidos vs actuales",
+abline(a=0,b=1,col="blue",lwd=2))
+```
+### Residuales
+Podemos decir que en general es una buena gráfica, mejor que la obtenida con el dataset anterior ya que se eliminaron los puntos alejados. Sin embargo, aparecieron nuevos puntos, los cuales se pueden analizar y limpiar.
+
+```{r}
+plot(residuals(mlr_clean))
+abline(a=0,b=0,col="blue",lwd=2)
+text(residuals(mlr_clean))
+```
+
+### Ploteo del Modelo
+
+```{r}
+plot(mlr_clean)
+```
+
+### Histograma de Residuales
+```{r}
+hist(mlr_clean$residuals,main="Histograma de residuales",freq=F)
+lines(density(mlr_clean$residuals),col = "red",lwd=2)
+
+plot(mlr_clean$residuals ~ dataset.selection.clean$price)
+abline(a=0,b=0,col="blue",lwd=2)
+
+qqnorm(mlr_clean$residuals)
+
+qqline(mlr_clean$residuals,col="blue",lwd=2)
+```
+### Overfitting
+```{r}
+split_data_mlr_clean <- createDataPartition(y =dataset.selection.clean$price,p=0.7,list=FALSE)
+
+train_data_mlr_clean <- dataset.selection.clean[split_data_mlr_clean,]
+test_data_mlr_clean <- dataset.selection.clean[-split_data_mlr_clean,]
+
+lmfit1_mlr_clean <- train( price ~ bedrooms+sqft_living+yr_built+grade+view+sqft_lot+sqft_living15, data = train_data_mlr_clean,method="lm")
+summary(lmfit1_mlr_clean)
+```
+#### RMSE
+```{r}
+predicted_test_mlr_clean <- predict(lmfit1_mlr_clean,test_data_mlr_clean)
+model_test_1_mlr_clean <- data.frame(obs = test_data_mlr_clean$price,pred=predicted_test_mlr_clean)
+defaultSummary(model_test_1_mlr_clean)
+```
+#### Ploteo
+```{r}
+ggplot(varImp(lmfit1_mlr))
+```
+### Cross Validation
+```{r}
+control1_mlr_clean <- trainControl(method="cv",number=10)
+lmfit2_mlr_clean <- train(price ~. ,data = dataset.selection.clean,method="lm",trControl=control1_mlr_clean,metric="Rsquared")
+summary(lmfit2_mlr_clean)
+```
+
+#### RMSE
+
+```{r}
+predicted_test_2_mlr_clean <- predict(lmfit2_mlr_clean,dataset.selection.clean)
+model_test_2_mlr_clean <- data.frame(obs = dataset.selection.clean$price,pred=predicted_test_2_mlr_clean)
+defaultSummary(model_test_2_mlr_clean)
+```
+
+#### Ploteo
+
+```{r}
+ggplot(varImp(lmfit2_mlr_clean))
+```
+### Boostrap
+
+```{r}
+control3_mlr_clean <- trainControl(method="boot",number=100)
+lmfit3_mlr_clean <- train(price ~. ,data = dataset.selection.clean,method="lm",trControl=control1_mlr_clean)
+summary(lmfit3_mlr_clean)
+```
+
+#### RMSE
+```{r}
+predicted_test_3_mlr_clean <- predict(lmfit3_mlr_clean,dataset.selection.clean)
+model_test_3_mlr_clean <- data.frame(obs = dataset.selection.clean$price,pred=predicted_test_3_mlr_clean)
+defaultSummary(model_test_3_mlr_clean)
+```
+#### Ploteo
+```{r}
+ggplot(varImp(lmfit3_mlr_clean))
+```
+Podemos decir que no hay variaciones significativas. El coeficiente de determinación R-Squared es bueno al igual que Adjusted R-Squared ya que tienen valores altos pero en este caso es menor en un 20% (47.53%) al que se obtuvo con el dataset anterior(64.98%). Podemos decir que las gráficas mejoraron respecto las anteriores. De todas maneras, se siguen observando valores alejados, dispersos e influyentes. Analizando lo obtenido, vemos que siguen apareciendo las mismas caracteristicas como las mas importantes. En cuanto a los RMSE, Boostrap y Cross Validation poseen el mismo valor(1.155187e+05) y
+el mayor que es 1.167813e+05 se obtiene evaluando el overfitting.
+
+##############
+# **Regresión Polinomial**
+##############
+
+La Regresión Polinomial es un caso especial de la Regresión Lineal, extiende el modelo lineal al agregar predictores adicionales, obtenidos al elevar cada uno de los predictores originales a una potencia.
+
+## **Dataset Crudo**
+
+```{r}
+mlr_poly_raw <- lm(formula = price ~ poly(sqft_living,2)+bathrooms+yr_built+
+                   grade+waterfront+view+bedrooms,data=dataset.selection.raw)
+summary(mlr_poly_raw)
+```
+Podemos observar que se agregó el predictor sqft_living. Los resultados son buenos y se logra casi un 68% en Adjusted R-squared. Por lo tanto al aplicar una regresión
+polinomial con el dataset crudo es más optimo para la predicción de los precios
+de las casas.
+
+### Índice de Confianza
+
+```{r}
+confint(mlr_poly_raw)
+```
+
+### Validación del modelo
+Podemos observar que el modelo no es simétrico y tiene una tendencia hacia la
+derecha.
+```{r}
+stem(mlr_poly_raw$residuals)
+```
+### Predecidos vs Actuales
+```{r}
+plot(predict(mlr_poly_raw),dataset.selection.raw$price/1000, ylab="Price[ 1 = U$D 1000]", 
+     main="Valores predecidos vs actuales",
+abline(a=0,b=1,col="blue",lwd=2))
+```
+### Residuales
+Podemos ver que los residuales tienen una aglomeración y cercana al valor 0.
+```{r}
+plot(residuals(mlr_poly_raw))
+abline(a=0,b=0,col="blue",lwd=2)
+text(residuals(mlr_poly_raw))
+```
+### Ploteo del Modelo
+Podemos ver que el gráfico de Normal Q-Q se levanta considerablemente al final
+de la recta por lo que hay que continuar con la limpieza de valores
+atípicos. También podemos ver que la distancia de Cook es aceptable.
+
+```{r}
+plot(mlr_poly_raw)
+```
+### Histograma de Residuales
+
+```{r}
+hist(mlr_poly_raw$residuals,main="Histograma de residuales",freq=F)
+lines(density(mlr_poly_raw$residuals),col = "red",lwd=2)
+
+plot(mlr_poly_raw$residuals ~ dataset.selection.raw$price)
+abline(a=0,b=0,col="blue",lwd=2)
+
+qqnorm(mlr_poly_raw$residuals)
+
+qqline(mlr_poly_raw$residuals,col="blue",lwd=2)
+```
+
+### Overfitting
+
+```{r}
+split_data <- createDataPartition(y =dataset.selection.raw$price,p=0.7,list=FALSE)
+
+train_data <- dataset.selection.raw[split_data,]
+test_data <- dataset.selection.raw[-split_data,]
+
+lmfit1 <- train( price ~ poly(sqft_living,2)+bathrooms+yr_built+
+                   grade+waterfront+view+bedrooms, data = train_data,method="lm")
+
+summary(lmfit1)
+```
+#### RMSE
+```{r}
+predicted_test <- predict(lmfit1,test_data)
+model_test_1 <- data.frame(obs = test_data$price,pred=predicted_test)
+defaultSummary(model_test_1)
+```
+#### Ploteo
+```{r}
+ggplot(varImp(lmfit1))
+```
+### Cross Validation
+```{r}
+control1 <- trainControl(method="cv",number=10)
+lmfit2 <- train(price ~. ,data = dataset.selection.raw,method="lm",trControl=control1,metric="Rsquared")
+summary(lmfit2)
+```
+#### RMSE
+```{r}
+predicted_test_2 <- predict(lmfit2,dataset.selection.raw)
+model_test_2 <- data.frame(obs = dataset.selection.raw$price,pred=predicted_test_2)
+defaultSummary(model_test_2)
+```
+#### Ploteo
+```{r}
+ggplot(varImp(lmfit2))
+```
+### Boostrap
+```{r}
+control3 <- trainControl(method="boot",number=100)
+lmfit3 <- train(price ~. ,data = dataset.selection.raw,method="lm",trControl=control1)
+summary(lmfit3)
+```
+#### RMSE
+```{r}
+predicted_test_3 <- predict(lmfit3,dataset.selection.raw)
+model_test_3 <- data.frame(obs = dataset.selection.raw$price,pred=predicted_test_3)
+defaultSummary(model_test_3)
+```
+#### Ploteo
+
+```{r}
+ggplot(varImp(lmfit3))
+```
+Respecto a regresión lineal, se obtuvieron mejores resultados, se llegó a un 68% Adjusted R-Squared y se puede observar una mejora en las gráficas de la validación del modelo a pesar de que aún siguen apareciendo cuestiones a estudiar y mejorar. Respecto a Cross validation y Boostrap logran un valor mas alto(2.172422e+05) de RMSE que el primero(2.098646e+05) logrando este también un Adjusted R-Squared del 68%. En todos aparecen las mismas características como importantes aunque en el primero bathrooms tiene mas relevancia que bedrooms.
+
+## **Dataset Limpio**
+```{r}
+mlr_poly_clean <- lm(formula = price ~ poly(sqft_living,2)+poly(sqft_living15,2)+poly(sqft_lot,2)+bedrooms+yr_built+
+                   grade+view,data=dataset.selection.clean)
+summary(mlr_poly_clean)
+
+```
+Podemos observar que se elevó al cuadrado los predictores 
+sqft_living,sqft_living15 y sqft_lot. El modelo sin embargo
+es poco significativo ya que el Adjusted R-squared es del 48%.
+### Índice de Confianza
+
+```{r}
+confint(mlr_poly_clean)
+```
+### Validación del modelo
+Podemos ver que el modelo es simétrico.
+
+```{r}
+stem(mlr_poly_clean$residuals)
+```
+
+### Predecidos vs Actuales
+
+```{r}
+plot(predict(mlr_poly_clean),dataset.selection.clean$price/1000, ylab="Price[ 1 = U$D 1000]", 
+     main="Valores predecidos vs actuales",
+abline(a=0,b=1,col="blue",lwd=2))
+```
+
+### Residuales
+Podemos ver que los residuales están concentrados alrededor del valor 0.
+```{r}
+plot(residuals(mlr_poly_clean))
+abline(a=0,b=0,col="blue",lwd=2)
+text(residuals(mlr_poly_clean))
+```
+
+### Ploteo del Modelo
+Podemos ver que el gráfico Normal Q-Q está mas cercano a la recta y se levanta
+levemente al final. También la distancia de Cook es aceptable.
+```{r}
+plot(mlr_poly_clean)
+```
+
+### Histograma de Residuales
+El histograma de residuales tiene una distribución mas uniforme.
+```{r}
+hist(mlr_poly_clean$residuals,main="Histograma de residuales",freq=F)
+lines(density(mlr_poly_clean$residuals),col = "red",lwd=2)
+
+plot(mlr_poly_clean$residuals ~ dataset.selection.clean$price)
+abline(a=0,b=0,col="blue",lwd=2)
+
+qqnorm(mlr_poly_clean$residuals)
+
+qqline(mlr_poly_clean$residuals,col="blue",lwd=2)
+```
+
+### Overfitting
+
+```{r}
+split_data_poly_clean <- createDataPartition(y =dataset.selection.clean$price,p=0.7,list=FALSE)
+
+train_data_poly_clean <- dataset.selection.clean[split_data_poly_clean,]
+test_data_poly_clean <- dataset.selection.clean[-split_data_poly_clean,]
+
+lmfit1_poly_clean <- train( price ~ poly(sqft_living,2)+poly(sqft_living15,2)+poly(sqft_lot,2)+bedrooms+yr_built+
+                   grade+view, data = train_data_poly_clean,method="lm")
+
+
+summary(lmfit1_poly_clean)
+```
+
+#### RMSE
+```{r}
+predicted_test_poly_clean <- predict(lmfit1_poly_clean,test_data_poly_clean)
+model_test_1_poly_clean <- data.frame(obs = test_data_poly_clean$price,pred=predicted_test_poly_clean)
+defaultSummary(model_test_1_poly_clean)
+```
+
+#### Ploteo
+
+```{r}
+ggplot(varImp(lmfit1))
+```
+
+### Cross Validation
+
+```{r}
+control1_poly_clean <- trainControl(method="cv",number=10)
+lmfit2_poly_clean <- train(price ~. ,data = dataset.selection.clean,method="lm",trControl=control1,metric="Rsquared")
+summary(lmfit2_poly_clean)
+```
+
+#### RMSE
+
+```{r}
+predicted_test_2_poly_clean <- predict(lmfit2_poly_clean,dataset.selection.clean)
+model_test_2_poly_clean <- data.frame(obs = dataset.selection.clean$price,pred=predicted_test_2_poly_clean)
+defaultSummary(model_test_2_poly_clean)
+```
+
+#### Ploteo
+
+```{r}
+ggplot(varImp(lmfit2_poly_clean))
+```
+
+### Boostrap
+
+```{r}
+control3_poly_clean <- trainControl(method="boot",number=100)
+lmfit3_poly_clean <- train(price ~. ,data = dataset.selection.clean,method="lm",trControl=control1_poly_clean)
+summary(lmfit3_poly_clean)
+```
+
+#### RMSE
+```{r}
+predicted_test_3_poly_clean <- predict(lmfit3_poly_clean,dataset.selection.clean)
+model_test_3_poly_clean <- data.frame(obs = dataset.selection.clean$price,pred=predicted_test_3_poly_clean)
+defaultSummary(model_test_3_poly_clean)
+```
+
+#### Ploteo
+
+```{r}
+ggplot(varImp(lmfit3_poly_clean))
+```
+
+Obtenemos en Adjusted R-Squared(48%) lo cuál sigue siendo un valor de significancia
+bajo. Hay mejoras notables en las gráficas de la validación del modelo. Respecto a Cross validation y Boostrap logran un mayor RMSE(1.155187e+05) que el primero(1.141740e+05). En todos aparecen las mismas variables como importantes aunque en el primer gráfico
+de importancia tiene mas relevancia grade que yr_built y siempre en último lugar
+la variable bedrooms.
+
+########################
+# **Clustering**
+#######################
+Procedemos a elaborar clústeres a partir del dataset crudo y el dataset 
+limpio con las variables seleccionadas con la técnica de Lasso.
+## Dataset Crudo
+```{r}
+dataset_clustering_raw <- dataset.selection.raw
+summary(dataset_clustering_raw)
+```
+
+```{r}
+dataset_clustering_raw$bathrooms<-as.factor(dataset.selection.raw$bathrooms)
+dataset_clustering_raw$yr_built<-as.factor(dataset.selection.raw$yr_built)
+dataset_clustering_raw$grade<-as.factor(dataset.selection.raw$grade)
+dataset_clustering_raw$waterfront<-as.factor(dataset.selection.raw$waterfront)
+dataset_clustering_raw$view<-as.factor(dataset.selection.raw$view)
+dataset_clustering_raw$bedrooms<-as.factor(dataset.selection.raw$bedrooms)
+```
+
+```{r}
+str(dataset_clustering_raw)
+```
+### Convertir variables categóricas
+Transformamos las variables categóricas como:
+- bathrooms.
+- yr_built.
+- grade.
+- waterfront.
+- view.
+- bedrooms.
+
+```{r}
+#install.packages("fastDummies")
+library("fastDummies")
+dataset.clust.raw <- dataset_clustering_raw
+dataset.clust.raw <- dummy_cols(dataset.clust.raw, c("bathrooms","yr_built","grade","waterfront",
+                                 "view","bedrooms"), 
+remove_first_dummy = TRUE)
+dataset.clust.raw[,c("bathrooms","yr_built","grade","waterfront",
+                                 "view","bedrooms")] <- NULL
+```
+### K-Means
+Procedemos a elaborar los clústeres con el algoritmo K-Means que es el más 
+eficiente.
+#### K = 5
+Primero elaboramos 5 clústeres.
+```{r}
+dataset.scaled.raw.5 <- scale(dataset.clust.raw)
+```
+
+```{r}
+k.means.fit.raw.5 <- kmeans(dataset.scaled.raw.5, centers = 5, nstart = 25)
+print(k.means.fit.raw.5)
+```
+Podemos ver la cantidad de elementos en cada clúster.
+```{r}
+k.means.fit.raw.5$size
+```
+
+```{r}
+k.means.fit.raw.5$cluster
+```
+
+```{r}
+k.means.fit.raw.5$centers
+```
+#### Crear Dataset con clusters
+Mediante la instrucción cbind() agregamos al dataset el vector con el numero de 
+cluster al que pertenece cada punto.
+```{r}
+dataset_cluster_raw_5 <- dataset.clust.raw
+  
+dataset_cluster_raw_5 <- cbind(dataset_cluster_raw_5, 
+                               cluster = k.means.fit.raw.5$cluster)
+```
+#### Creacion de dataset de cada cluster
+##### Cluster 1
+```{r}
+cluster_1_raw_kmean5 <- dataset_cluster_raw_5
+cluster_1_raw_kmean5 <- filter(cluster_1_raw_kmean5,cluster==1)
+cluster_1_raw_kmean5$cluster=NULL
+```
+##### Sumario Cluster 1
+Gracias al sumario podemos conocer que las observaciones que se agruparon
+en este clúster tienen las siguientes características:
+- Tienen un precio promedio de U$D 1509787.
+- Tienen un tamaño promedio de 4223 sqft.
+- Tienen habitaciones con 4 o 5 sqft.
+- No tienen baños.
+- Tienen grado 11.
+```{r}
+sumario_cluster_raw_1_kmean5 <- summary(cluster_1_raw_kmean5)
+sumario_cluster_raw_1_kmean5
+```
+
+##### Cluster 2
+```{r}
+cluster_2_raw_kmean5 <- dataset_cluster_raw_5
+cluster_2_raw_kmean5 <- filter(cluster_2_raw_kmean5,cluster==2)
+cluster_2_raw_kmean5$cluster=NULL
+```
+##### Sumario Cluster 2
+Gracias al sumario podemos conocer que las observaciones que se agruparon
+en este clúster tienen las siguientes características:
+- Tienen un precio promedio de U$D 625278.
+- Tienen un tamaño promedio de 2605 sqft.
+- Tienen habitaciones con 3 sqft.
+- Tienen grados 7 y 8.
+- Tienen baños con 2.75 sqft.
+```{r}
+sumario_cluster_raw_2_kmean5 <- summary(cluster_2_raw_kmean5)
+sumario_cluster_raw_2_kmean5
+```
+##### Cluster 3
+```{r}
+cluster_3_raw_kmean5 <- dataset_cluster_raw_5
+cluster_3_raw_kmean5 <- filter(cluster_3_raw_kmean5,cluster==3)
+cluster_3_raw_kmean5$cluster=NULL
+```
+##### Sumario Cluster 3
+Gracias al sumario podemos conocer que las observaciones que se agruparon
+en este clúster tienen las siguientes características:
+- Tienen un precio promedio de U$D 407386.
+- Tienen un tamaño promedio de 1680 sqft.
+- Tienen baños con tamaño 1.75 sqft
+- Tienen habitaciones con 3 sqft.
+- Tienen grado 7.
+```{r}
+sumario_cluster_raw_3_kmean5 <- summary(cluster_3_raw_kmean5)
+sumario_cluster_raw_3_kmean5
+```
+
+##### Cluster 4
+```{r}
+cluster_4_raw_kmean5 <- dataset_cluster_raw_5
+cluster_4_raw_kmean5 <- filter(cluster_4_raw_kmean5,cluster==4)
+cluster_4_raw_kmean5$cluster=NULL
+```
+
+##### Sumario Cluster 4
+Gracias al sumario podemos conocer que las observaciones que se agruparon
+en este clúster tienen las siguientes características:
+- Tienen un precio promedio de U$D 629668.
+- Tienen un tamaño promedio de 2510 sqft.
+- Tienen habitaciones con 4 o 5 sqft.
+- Tienen grado 11.
+```{r}
+sumario_cluster_raw_4_kmean5 <- summary(cluster_4_raw_kmean5)
+sumario_cluster_raw_4_kmean5
+```
+##### Cluster 5
+```{r}
+cluster_5_raw_kmean5 <- dataset_cluster_raw_5
+cluster_5_raw_kmean5 <- filter(cluster_5_raw_kmean5,cluster==5)
+cluster_5_raw_kmean5$cluster=NULL
+```
+
+##### Sumario Cluster 5
+Gracias al sumario podemos conocer que las observaciones que se agruparon
+en este clúster tienen las siguientes características:
+- Tienen un precio promedio de U$D 331176.
+- Tienen un tamaño promedio de 1140 sqft.
+- Tienen habitaciones con 4 o 5 sqft.
+- Tienen grados 6 y 7.
+```{r}
+sumario_cluster_raw_5_kmean5 <- summary(cluster_5_raw_kmean5)
+sumario_cluster_raw_5_kmean5
+```
+
+Vemos que los datos del dataset tienen una tendencia al agrupamiento. Mientras que 
+los simulados no.
+```{r}
+data.simulated.raw <- purrr::map_df(dataset.clust.raw, .f = function(x){ runif(n = length(x), min = min(x),
+max = max(x)) })
+dataset.scaled.raw <- scale(dataset.clust.raw)
+data.simulated.scaled.raw <- scale(data.simulated.raw)
+pca_data_credit <- prcomp(dataset.scaled.raw)
+pca_data_simulated <- prcomp(data.simulated.scaled.raw)
+p1 <- fviz_pca_ind(X = pca_data_credit,
+geom = "point", title = "PCA - datos House Prices",
+pallete = "jco") +
+theme_bw() + theme(legend.position = "bottom")
+p2 <- fviz_pca_ind(X = pca_data_simulated, geom = "point",
+title = "PCA - datos simulados", pallete = "jco") +
+theme_bw() + theme(legend.position = "bottom")
+ggarrange(p1, p2, common.legend = TRUE)
+```
+##### Ancho de Silhouette K=5
+Teniendo en cuenta el ancho de Silhouette:
+- El clúster 1 tiene un ancho de -0.01 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
+- El clúster 2 tiene un ancho de -0.07 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
+- El clúster 3 tiene un ancho de -0.22 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
+- El clúster 4 tiene un ancho de  0.07 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
+- El clúster 5 tiene un ancho de  0.54 es indicativo que la observacion fue asignada al clúster correcto.
+```{r}
+k.means.fit.5 <- eclust(x = dataset.scaled.raw.5, FUNcluster = "kmeans", k = 5, seed = 123,
+hc_metric = "euclidean", nstart = 50, graph = FALSE)
+fviz_silhouette(sil.obj = k.means.fit.5, print.summary = TRUE, palette = "jco",
+ggtheme = theme_classic())
+
+p <- fviz_cluster(object = k.means.fit.5, geom = "point", ellipse.type = "norm",
+palette = "jco")
+p + geom_point(data = p$data[c(356,327,175,185,29,348),],
+colour = "firebrick", size = 2.5) + theme_bw() + theme(legend.position = "bottom")
+```
+
+## Dataset Limpio
+```{r}
+dataset_clustering_clean <- dataset.selection.clean
+summary(dataset_clustering_clean)
+```
+
+```{r}
+dataset_clustering_clean$bedrooms<-as.factor(dataset.selection.clean$bedrooms)
+dataset_clustering_clean$yr_built<-as.factor(dataset.selection.clean$yr_built)
+dataset_clustering_clean$grade<-as.factor(dataset.selection.clean$grade)
+dataset_clustering_clean$view<-as.factor(dataset.selection.clean$view)
+```
+
+```{r}
+str(dataset_clustering_clean)
+```
+
+### Convertir variables categóricas
+Transformamos las variables categóricas como:
+- yr_built.
+- grade.
+- view.
+- bedrooms.
+```{r}
+dataset.clust.clean <- dataset_clustering_clean
+dataset.clust.clean <- dummy_cols(dataset.clust.clean, c("bedrooms","yr_built","grade",
+                                 "view"), 
+remove_first_dummy = TRUE)
+dataset.clust.clean[,c("bedrooms","yr_built","grade",
+                                 "view")] <- NULL
+```
+
+### K-Means
+
+#### K=5
+```{r}
+dataset.scaled.clean.5 <- scale(dataset.clust.clean)
+```
+
+```{r}
+k.means.fit.clean.5 <- kmeans(dataset.scaled.clean.5, centers = 5, nstart = 25)
+print(k.means.fit.clean.5)
+```
+
+```{r}
+k.means.fit.clean.5$size
+```
+
+```{r}
+k.means.fit.clean.5$cluster
+```
+
+```{r}
+k.means.fit.clean.5$centers
+```
+#### Crear Dataset con clusters
+Mediante la instrucción cbind() agregamos al dataset el vector con el numero de 
+cluster al que pertenece cada punto.
+```{r}
+dataset_cluster_clean_5 <- dataset.clust.clean
+  
+dataset_cluster_clean_5 <- cbind(dataset_cluster_clean_5, 
+                               cluster = k.means.fit.clean.5$cluster)
+```
+
+#### Creacion de dataset de cada cluster
+##### Cluster 1
+```{r}
+cluster_1_clean_kmean5 <- dataset_cluster_clean_5
+cluster_1_clean_kmean5 <- filter(cluster_1_clean_kmean5,cluster==1)
+cluster_1_clean_kmean5$cluster=NULL
+```
+##### Sumario Cluster 1
+Gracias al sumario podemos conocer que las observaciones que se agruparon
+en este clúster tienen las siguientes características:
+- Tienen un precio promedio de U$D 393603.
+- Tienen un tamaño promedio de 1623 sqft.
+- Tienen habitaciones con 3,4 o 5 sqft.
+- Fueron construidas entre 1901 y 2015.
+- Tienen grados 7 y 8.
+- Fueron vistas entre 1 y 4 veces.
+- Tienen un tamaño promedio de lote de 6662 sqft.
+```{r}
+sumario_cluster_clean_1_kmean5 <- summary(cluster_1_clean_kmean5)
+sumario_cluster_clean_1_kmean5
+```
+
+##### Cluster 2
+```{r}
+cluster_2_clean_kmean5 <- dataset_cluster_clean_5
+cluster_2_clean_kmean5 <- filter(cluster_2_clean_kmean5,cluster==2)
+cluster_2_clean_kmean5$cluster=NULL
+```
+##### Sumario Cluster 2
+Gracias al sumario podemos conocer que las observaciones que se agruparon
+en este clúster tienen las siguientes características:
+- Tienen un precio promedio de U$D 404384.
+- Tienen un tamaño promedio de 2013 sqft.
+- Tienen un lote con tamaño promedio 7959 sqft.
+- Tienen habitaciones con 3,4 y 5 sqft.
+- Tienen grados 6,7,8,9 y 10.
+- Fueron construidas en 1998.
+- Fueron vistas entre 1 y 3 veces.
+```{r}
+sumario_cluster_clean_2_kmean5 <- summary(cluster_2_clean_kmean5)
+sumario_cluster_clean_2_kmean5
+```
+##### Cluster 3
+```{r}
+cluster_3_clean_kmean5 <- dataset_cluster_clean_5
+cluster_3_clean_kmean5 <- filter(cluster_3_clean_kmean5,cluster==3)
+cluster_3_clean_kmean5$cluster=NULL
+```
+##### Sumario Cluster 3
+Gracias al sumario podemos conocer que las observaciones que se agruparon
+en este clúster tienen las siguientes características:
+- Tienen un precio promedio de U$D 292552.
+- Tienen un tamaño promedio de 1151 sqft.
+- Tienen un tamaño de lote promedio de 6603 sqft.
+- Fueron reformadas en 2015.
+- Tienen habitaciones con 3 sqft.
+- Tienen grados 5,6 y 7.
+- Tienen habitaciones de tamaño 3,4 y sqft.
+- Fueron construidas entre 1901 y 2015.
+```{r}
+sumario_cluster_clean_3_kmean5 <- summary(cluster_3_clean_kmean5)
+sumario_cluster_clean_3_kmean5
+```
+
+##### Cluster 4
+```{r}
+cluster_4_clean_kmean5 <- dataset_cluster_clean_5
+cluster_4_clean_kmean5 <- filter(cluster_4_clean_kmean5,cluster==4)
+cluster_4_clean_kmean5$cluster=NULL
+```
+
+##### Sumario Cluster 4
+Gracias al sumario podemos conocer que las observaciones que se agruparon
+en este clúster tienen las siguientes características:
+- Tienen un precio promedio de U$D 508079.
+- Tienen un tamaño promedio de 2015 sqft.
+- Tienen un tamaño de lote promedio de 5852 sqft.
+- Tienen habitaciones con 3,4 o 5 sqft.
+- Tienen grados de 7 a 11.
+- Fueron construidas entre 1901 y 2015.
+```{r}
+sumario_cluster_clean_4_kmean5 <- summary(cluster_4_clean_kmean5)
+sumario_cluster_clean_4_kmean5
+```
+##### Cluster 5
+```{r}
+cluster_5_clean_kmean5 <- dataset_cluster_clean_5
+cluster_5_clean_kmean5 <- filter(cluster_5_clean_kmean5,cluster==5)
+cluster_5_clean_kmean5$cluster=NULL
+```
+
+##### Sumario Cluster 5
+Gracias al sumario podemos conocer que las observaciones que se agruparon
+en este clúster tienen las siguientes características:
+- Tienen un precio promedio de U$D 412793.
+- Tienen un tamaño promedio de 1292 sqft.
+- Tienen un tamaño de lote promedio de 5982 sqft.
+- Fueron reformadas en 2015.
+- Tienen habitaciones con 3,4 o 5 sqft.
+- Tienen grados de 5 a 8.
+- Fueron construidas entre 1901 y 2015.
+- Fueron vistas 1 o 2 veces.
+```{r}
+sumario_cluster_clean_5_kmean5 <- summary(cluster_5_clean_kmean5)
+sumario_cluster_clean_5_kmean5
+```
+
+
+```{r}
+library("factoextra")
+library("ggpubr")
+data.simulated.clean <- purrr::map_df(dataset.clust.clean, .f = function(x){ runif(n = length(x), min = min(x),
+max = max(x)) })
+dataset.scaled.clean <- scale(dataset.clust.clean)
+data.simulated.scaled.clean <- scale(data.simulated.clean)
+pca_data_credit <- prcomp(dataset.scaled.clean)
+pca_data_simulated <- prcomp(data.simulated.scaled.clean)
+p1 <- fviz_pca_ind(X = pca_data_credit,
+geom = "point", title = "PCA - datos House Prices",
+pallete = "jco") +
+theme_bw() + theme(legend.position = "bottom")
+p2 <- fviz_pca_ind(X = pca_data_simulated, geom = "point",
+title = "PCA - datos simulados", pallete = "jco") +
+theme_bw() + theme(legend.position = "bottom")
+ggarrange(p1, p2, common.legend = TRUE)
+```
+##### Ancho de Silhouette K=5
+Teniendo en cuenta el ancho de Silhouette:
+- El clúster 1 tiene un ancho de 0.72 es indicativo que la observacion fue asignada al clúster correcto.
+- El clúster 2 tiene un ancho de 0.72 es indicativo que la observacion fue asignada al clúster correcto.
+- El clúster 3 tiene un ancho de 0.03 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
+- El clúster 4 tiene un ancho de 0.03 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
+- El clúster 5 tiene un ancho de -0.03 es indicativo que la observacion se encuentra en un punto intermedio entre dos clústeres.
+```{r}
+k.means.fit.5 <- eclust(x = dataset.scaled.clean.5, FUNcluster = "kmeans", k = 5, seed = 123,
+hc_metric = "euclidean", nstart = 50, graph = FALSE)
+fviz_silhouette(sil.obj = k.means.fit.5, print.summary = TRUE, palette = "jco",
+ggtheme = theme_classic())
+
+p <- fviz_cluster(object = k.means.fit.5, geom = "point", ellipse.type = "norm",
+palette = "jco")
+p + geom_point(data = p$data[c(356,327,175,185,29,348),],
+colour = "firebrick", size = 2.5) + theme_bw() + theme(legend.position = "bottom")
+```
+
+###################
+# **Conclusiones**
+###################
+A lo largo del presente documento se realizó el análisis de datos del dataset de precios de casas en 
+King County, Estados Unidos con el objetivo de realizar la predicción de precios de las mismas. 
+Primero se efectuó el análisis exploratorio de datos de cada feature y se identificaron los valores 
+atípicos gracias a los boxplots, los histogramas, los gráficos de torta. Luego se realizó la limpieza de 
+los outliers, lo que llevó a la pérdida del 35% de los datos.
+Luego de la limpieza, se utilizaron técnicas de selección de variables y se obtuvo el menor RMSE con la 
+técnica de Lasso. A partir de ello, se decidió tener en cuenta las variables recomendadas por dicha técnica 
+como ser el precio, las dimensiones de la casa, el terreno, las habitaciones, los baños, si fue vista 
+anteriormente, la calificación por el organismo, si tiene sótano. Dichas variables si se condicen con los 
+aspectos a tener en cuenta para la compra de una casa.
+Después, aplicamos una regresión lineal que no arrojó buenos resultados(Adjusted R-squared cercano al 45%), 
+se trató de mejorarlo utilizando una regresión polinomial pero no hubo una mejora significativa. Entonces, 
+se decidió aplicar regresión lineal con el dataset crudo, vimos que el modelo si era 
+significativo(Adjusted R-squared cercano al 65%), y además al aplicarle una regresión polinomial si 
+obtuvimos una mejora significativa(Adjusted R-squared cercano al 67%).
+Por lo que se descubrió que al realizar la limpieza, se recortaron valores importantes para el modelo, 
+es por eso que se obtuvieron mejores resultados con el dataset crudo.
+Luego se decidió aplicar la técnica de clustering con ambos datasets(crudo y limpio) utilizando el 
+algoritmo K-means, se crearon 5 clústers respectivamente con la caracterización de cada uno de ellos e 
+identificando por cuáles características comunes se agruparon.
+Para finalizar, gracias al análisis efectuado se puede realizar a partir del dataset
+crudo un estudio de predicción de precios teniendo en cuenta algunas características como las 
+variables seleccionadas(tamaño de la casa, tamaño del terreno, cantidad de baños, cantidad de habitaciones 
+y la calificación del organismo público(grado)) mediante la aplicación de alguna técnica como por ejemplo, 
+árbol de decisiones.
+
